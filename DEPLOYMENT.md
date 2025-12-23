@@ -2,12 +2,49 @@
 
 This document explains how to deploy the PersonalJazzWiki to Cloudflare Pages.
 
+**GitHub Repo:** https://github.com/travelinman1013/personaljazzwiki
+
+## Current Status
+
+- [x] GitHub repo created
+- [x] GitHub Actions workflow configured
+- [ ] Cloudflare secrets configured (do this when ready to go live)
+- [ ] Content synced for deployment
+
+## Quick Start (When Ready to Go Live)
+
+```bash
+# 1. Get Cloudflare credentials from https://dash.cloudflare.com
+#    - Account ID: visible in right sidebar
+#    - API Token: My Profile > API Tokens > Create Token > "Edit Cloudflare Workers"
+
+# 2. Add secrets to GitHub
+gh secret set CLOUDFLARE_API_TOKEN --repo travelinman1013/personaljazzwiki
+gh secret set CLOUDFLARE_ACCOUNT_ID --repo travelinman1013/personaljazzwiki
+
+# 3. Sync your artist content
+cd /Users/maxwell/LETSGO/MaxVault/01_Projects/PersonalArtistWiki/web
+./scripts/sync-for-deploy.sh
+
+# 4. Commit and push to trigger deployment
+git add content-deploy/
+git commit -m "Add content for deployment"
+git push
+
+# 5. Check deployment status
+gh run watch --repo travelinman1013/personaljazzwiki
+```
+
+Your site will be live at: `https://personaljazzwiki.pages.dev`
+
+---
+
 ## Prerequisites
 
 - Node.js 20+
 - npm
 - GitHub account
-- Cloudflare account
+- Cloudflare account (free tier works fine)
 
 ## Project Structure
 
@@ -85,8 +122,18 @@ git push
    - Copy the ID
 
 3. **Add GitHub Secrets:**
-   - Go to your GitHub repository
-   - Settings > Secrets and variables > Actions
+
+   Via CLI (easiest):
+   ```bash
+   gh secret set CLOUDFLARE_API_TOKEN --repo travelinman1013/personaljazzwiki
+   # Paste your API token when prompted
+
+   gh secret set CLOUDFLARE_ACCOUNT_ID --repo travelinman1013/personaljazzwiki
+   # Paste your Account ID when prompted
+   ```
+
+   Or via GitHub web:
+   - Go to https://github.com/travelinman1013/personaljazzwiki/settings/secrets/actions
    - Add two secrets:
      - `CLOUDFLARE_API_TOKEN`: Your API token
      - `CLOUDFLARE_ACCOUNT_ID`: Your account ID
