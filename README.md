@@ -1,43 +1,91 @@
-# Astro Starter Kit: Minimal
+# PersonalJazzWiki
 
-```sh
-npm create astro@latest -- --template minimal
+A Wikipedia-style wiki for 3,400+ musician profiles with full-text search, genre/instrument browsing, and artist connections.
+
+## Features
+
+- **3,449 Artist Profiles** - Comprehensive musician database
+- **Full-Text Search** - Powered by Pagefind for instant client-side search
+- **Genre Browsing** - 466 genres from bebop to zydeco
+- **Instrument Filtering** - 145 instrument categories
+- **Artist Connections** - Musical collaborations and influences
+- **Portrait Gallery** - 3,000+ artist photos
+- **Wikipedia-style Design** - Clean, readable interface
+
+## Tech Stack
+
+- **Framework**: [Astro](https://astro.build) (Static Site Generator)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com)
+- **Search**: [Pagefind](https://pagefind.app)
+- **Hosting**: [Cloudflare Pages](https://pages.cloudflare.com)
+
+## Quick Start
+
+```bash
+# Install dependencies
+npm install
+
+# Sync content from source (Obsidian vault)
+./scripts/sync-content.sh
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build:prod
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Project Structure
 
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
+```
+web/
 ├── src/
+│   ├── content/artists/     # Artist markdown files (synced)
+│   ├── layouts/             # Page layouts
+│   ├── components/          # Astro components
 │   └── pages/
-│       └── index.astro
-└── package.json
+│       ├── artists/         # Artist pages
+│       ├── genres/          # Genre listing/pages
+│       ├── instruments/     # Instrument listing/pages
+│       ├── search.astro     # Full-text search
+│       └── random.astro     # Random artist
+├── public/
+│   └── portraits/           # Artist photos (synced)
+├── scripts/
+│   ├── sync-content.sh      # Local dev sync
+│   └── sync-for-deploy.sh   # Deployment sync
+└── content-deploy/          # Committed content for CI/CD
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## Commands
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server at localhost:4321 |
+| `npm run build` | Build production site to ./dist/ |
+| `npm run build:prod` | Sync + build + Pagefind indexing |
+| `npm run preview` | Preview built site locally |
+| `npm run sync` | Sync content from Obsidian vault |
 
-Any static assets, like images, can be placed in the `public/` directory.
+## Deployment
 
-## 🧞 Commands
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
 
-All commands are run from the root of the project, from a terminal:
+Quick deploy to Cloudflare Pages:
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+```bash
+npm run build:prod
+npx wrangler pages deploy dist --project-name personal-artist-wiki
+```
 
-## 👀 Want to learn more?
+## Content Source
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+Artist profiles are sourced from an Obsidian vault with YAML frontmatter containing:
+- Biographical information (birth/death dates, active years)
+- Musical data (genres, instruments)
+- Connections (collaborators, influences, mentors)
+- External links (Spotify, Wikipedia, MusicBrainz)
+
+## License
+
+Personal use only. Artist data sourced from public APIs and Wikipedia.

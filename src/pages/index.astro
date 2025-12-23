@@ -1,16 +1,173 @@
 ---
+import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
 
+// Get all artists from the collection
+let allArtists: Awaited<ReturnType<typeof getCollection>> = [];
+let errorMessage = '';
+
+try {
+  allArtists = await getCollection('artists');
+} catch (e) {
+  errorMessage = String(e);
+}
+
+// Get stats
+const artistCount = allArtists.length;
+const artistsWithSpotify = allArtists.filter(a => a.data.spotify_data?.popularity).length;
+
+// Get popular artists (sorted by Spotify popularity)
+const popularArtists = allArtists
+  .filter(a => a.data.spotify_data?.popularity && a.data.spotify_data.popularity > 0)
+  .sort((a, b) => (b.data.spotify_data?.popularity || 0) - (a.data.spotify_data?.popularity || 0))
+  .slice(0, 20);
+
+// Get recently updated artists - handle both string and Date types
+const recentArtists = allArtists
+  .filter(a => a.data.last_updated)
+  .sort((a, b) => {
+    const dateA = a.data.last_updated ? new Date(a.data.last_updated).getTime() : 0;
+    const dateB = b.data.last_updated ? new Date(b.data.last_updated).getTime() : 0;
+    return dateB - dateA;
+  })
+  .slice(0, 10);
+
+// Get genre counts
+const genreCounts = new Map<string, number>();
+allArtists.forEach(artist => {
+  const genres = artist.data.genres as string[] | undefined;
+  genres?.forEach(genre => {
+    genreCounts.set(genre, (genreCounts.get(genre) || 0) + 1);
+  });
+});
+const topGenres = Array.from(genreCounts.entries())
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 15);
+
+// Helper to format numbers with commas
+const formatNumber = (num: number) => num.toLocaleString();
+
+// Helper to create slug from title
+const toSlug = (title: string) => title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+
+// Helper to format date
+const formatDate = (dateValue: string | Date | undefined): string => {
+  if (!dateValue) return 'Unknown';
+  const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
+  return date.toLocaleDateString();
+};
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout title="Home">
+  <div class="article-content">
+    <h1>PersonalJazzWiki</h1>
+
+    {errorMessage && (
+      <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <strong>Error loading artists:</strong> {errorMessage}
+      </div>
+    )}
+
+    <p class="text-lg text-wiki-text-secondary mb-6">
+      Welcome to PersonalJazzWiki, a personal encyclopedia of <strong>{formatNumber(artistCount)}</strong> musicians,
+      bands, and artists. Explore their biographies, discographies, musical connections, and more.
+    </p>
+
+    <!-- Stats Box -->
+    <div class="bg-wiki-accent-light border border-wiki-border rounded p-4 mb-8">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+        <div>
+          <div class="text-2xl font-bold text-wiki-accent">{formatNumber(artistCount)}</div>
+          <div class="text-sm text-wiki-text-muted">Total Artists</div>
+        </div>
+        <div>
+          <div class="text-2xl font-bold text-wiki-accent">{formatNumber(artistsWithSpotify)}</div>
+          <div class="text-sm text-wiki-text-muted">With Spotify Data</div>
+        </div>
+        <div>
+          <div class="text-2xl font-bold text-wiki-accent">{formatNumber(topGenres.length)}</div>
+          <div class="text-sm text-wiki-text-muted">Genres Covered</div>
+        </div>
+        <div>
+          <div class="text-2xl font-bold text-wiki-accent">{formatNumber(genreCounts.size)}</div>
+          <div class="text-sm text-wiki-text-muted">Unique Genres</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Popular Artists Section -->
+    <h2>Most Popular Artists</h2>
+    <p class="text-wiki-text-secondary mb-4">Artists ranked by Spotify popularity score:</p>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+      {popularArtists.map((artist) => (
+        <a
+          href={`/artists/${artist.slug}`}
+          class="block bg-wiki-bg p-3 border border-wiki-border-light rounded hover:border-wiki-link hover:bg-wiki-accent-light transition-colors"
+        >
+          <div class="flex items-start justify-between">
+            <span class="text-wiki-link font-medium">{artist.data.title || artist.slug}</span>
+            <span class="text-xs text-wiki-text-muted bg-wiki-bg-nav px-1.5 py-0.5 rounded">
+              {artist.data.spotify_data?.popularity}
+            </span>
+          </div>
+          {artist.data.genres && (artist.data.genres as string[]).length > 0 && (
+            <div class="text-xs text-wiki-text-muted mt-1 truncate">
+              {(artist.data.genres as string[]).slice(0, 2).join(', ')}
+            </div>
+          )}
+        </a>
+      ))}
+    </div>
+
+    <!-- Browse by Genre Section -->
+    <h2>Browse by Genre</h2>
+    <p class="text-wiki-text-secondary mb-4">Top genres by artist count:</p>
+
+    <div class="flex flex-wrap gap-2 mb-8">
+      {topGenres.map(([genre, count]) => (
+        <a
+          href={`/genres/${toSlug(genre)}`}
+          class="inline-flex items-center px-3 py-1.5 bg-wiki-tag-bg border border-wiki-tag-border rounded text-sm text-wiki-tag-text hover:bg-wiki-accent-light hover:border-wiki-link transition-colors"
+        >
+          <span>{genre}</span>
+          <span class="ml-2 text-xs text-wiki-text-muted">({formatNumber(count)})</span>
+        </a>
+      ))}
+    </div>
+
+    <!-- Recently Updated Section -->
+    <h2>Recently Updated</h2>
+    <p class="text-wiki-text-secondary mb-4">Latest artist profile updates:</p>
+
+    <ul class="space-y-1 mb-8">
+      {recentArtists.map(artist => (
+        <li class="flex items-center justify-between py-1 border-b border-wiki-border-light">
+          <a href={`/artists/${artist.slug}`} class="text-wiki-link hover:underline">
+            {artist.data.title || artist.slug}
+          </a>
+          <span class="text-xs text-wiki-text-muted">
+            {formatDate(artist.data.last_updated as string | Date | undefined)}
+          </span>
+        </li>
+      ))}
+    </ul>
+
+    <!-- Quick Links -->
+    <h2>Quick Links</h2>
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <a href="/artists" class="block p-4 bg-wiki-bg border border-wiki-border rounded hover:bg-wiki-accent-light transition-colors">
+        <h3 class="font-medium text-wiki-link mb-1">All Artists</h3>
+        <p class="text-sm text-wiki-text-muted">Browse all {formatNumber(artistCount)} artists alphabetically</p>
+      </a>
+      <a href="/genres" class="block p-4 bg-wiki-bg border border-wiki-border rounded hover:bg-wiki-accent-light transition-colors">
+        <h3 class="font-medium text-wiki-link mb-1">Genres</h3>
+        <p class="text-sm text-wiki-text-muted">Explore artists by musical genre</p>
+      </a>
+      <a href="/random" class="block p-4 bg-wiki-bg border border-wiki-border rounded hover:bg-wiki-accent-light transition-colors">
+        <h3 class="font-medium text-wiki-link mb-1">Random Artist</h3>
+        <p class="text-sm text-wiki-text-muted">Discover a random artist from the wiki</p>
+      </a>
+    </div>
+  </div>
+</Layout>

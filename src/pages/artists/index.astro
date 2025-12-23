@@ -1,0 +1,162 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+// Get all artists
+const allArtists = await getCollection('artists');
+
+// Sort by title alphabetically
+const sortedArtists = allArtists.sort((a, b) => {
+  const titleA = (a.data.title as string || a.id).toLowerCase();
+  const titleB = (b.data.title as string || b.id).toLowerCase();
+  return titleA.localeCompare(titleB);
+});
+
+// Group artists by first letter
+const artistsByLetter = new Map<string, typeof sortedArtists>();
+const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+
+// Add # for non-alphabetic entries
+artistsByLetter.set('#', []);
+
+alphabet.forEach(letter => artistsByLetter.set(letter, []));
+
+sortedArtists.forEach(artist => {
+  const title = (artist.data.title as string || artist.id);
+  const firstChar = title.charAt(0).toUpperCase();
+
+  if (alphabet.includes(firstChar)) {
+    artistsByLetter.get(firstChar)!.push(artist);
+  } else {
+    artistsByLetter.get('#')!.push(artist);
+  }
+});
+
+// Get counts for each letter
+const letterCounts = new Map<string, number>();
+artistsByLetter.forEach((artists, letter) => {
+  letterCounts.set(letter, artists.length);
+});
+
+// Helper to get genres display
+const getGenresDisplay = (artist: typeof sortedArtists[0]) => {
+  const genres = artist.data.genres as string[] | undefined;
+  if (!genres || genres.length === 0) return '';
+  return genres.slice(0, 2).join(', ');
+};
+
+// Helper to get years active
+const getYearsActive = (artist: typeof sortedArtists[0]) => {
+  return artist.data.years_active as string | undefined;
+};
+---
+
+<Layout title="All Artists">
+  <div class="article-content">
+    <h1>All Artists</h1>
+
+    <p class="text-wiki-text-secondary mb-4">
+      Browse all <strong>{sortedArtists.length}</strong> artists in the wiki alphabetically.
+    </p>
+
+    <!-- A-Z Navigation -->
+    <nav class="sticky top-0 bg-wiki-bg-content py-3 border-b border-wiki-border mb-6 z-10">
+      <div class="flex flex-wrap gap-1 justify-center">
+        {letterCounts.get('#')! > 0 && (
+          <a
+            href="#letter-other"
+            class="px-2 py-1 text-sm font-medium text-wiki-link hover:bg-wiki-accent-light rounded"
+          >
+            # ({letterCounts.get('#')})
+          </a>
+        )}
+        {alphabet.map(letter => {
+          const count = letterCounts.get(letter) || 0;
+          return count > 0 ? (
+            <a
+              href={`#letter-${letter}`}
+              class="px-2 py-1 text-sm font-medium text-wiki-link hover:bg-wiki-accent-light rounded"
+            >
+              {letter} <span class="text-wiki-text-muted text-xs">({count})</span>
+            </a>
+          ) : (
+            <span class="px-2 py-1 text-sm font-medium text-wiki-text-muted">
+              {letter}
+            </span>
+          );
+        })}
+      </div>
+    </nav>
+
+    <!-- Artist Lists by Letter -->
+    <div class="space-y-8">
+      {/* Non-alphabetic entries */}
+      {artistsByLetter.get('#')!.length > 0 && (
+        <section id="letter-other">
+          <h2 class="text-2xl font-serif border-b border-wiki-border pb-2 mb-4">#</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+            {artistsByLetter.get('#')!.map(artist => (
+              <a
+                href={`/artists/${artist.id}`}
+                class="block p-2 hover:bg-wiki-accent-light rounded border border-transparent hover:border-wiki-border-light transition-colors"
+              >
+                <span class="text-wiki-link font-medium">{artist.data.title || artist.id}</span>
+                {getGenresDisplay(artist) && (
+                  <span class="text-wiki-text-muted text-sm ml-2">({getGenresDisplay(artist)})</span>
+                )}
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Alphabetic entries */}
+      {alphabet.map(letter => {
+        const artists = artistsByLetter.get(letter)!;
+        if (artists.length === 0) return null;
+
+        return (
+          <section id={`letter-${letter}`}>
+            <h2 class="text-2xl font-serif border-b border-wiki-border pb-2 mb-4">{letter}</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+              {artists.map(artist => (
+                <a
+                  href={`/artists/${artist.id}`}
+                  class="block p-2 hover:bg-wiki-accent-light rounded border border-transparent hover:border-wiki-border-light transition-colors"
+                >
+                  <span class="text-wiki-link font-medium">{artist.data.title || artist.id}</span>
+                  {getGenresDisplay(artist) && (
+                    <span class="text-wiki-text-muted text-sm ml-2">({getGenresDisplay(artist)})</span>
+                  )}
+                </a>
+              ))}
+            </div>
+          </section>
+        );
+      })}
+    </div>
+
+    <!-- Back to top -->
+    <div class="fixed bottom-6 right-6">
+      <a
+        href="#"
+        class="bg-wiki-accent text-white px-4 py-2 rounded-full shadow-lg hover:bg-wiki-link-hover transition-colors text-sm"
+        onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;"
+      >
+        Back to top
+      </a>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  /* Smooth scrolling for anchor links */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Offset for sticky header */
+  section[id] {
+    scroll-margin-top: 4rem;
+  }
+</style>

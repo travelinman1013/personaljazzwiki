@@ -1,0 +1,70 @@
+---
+import { getCollection } from 'astro:content';
+import WikiArticle from '../../layouts/WikiArticle.astro';
+import { marked } from 'marked';
+
+export async function getStaticPaths() {
+  const artists = await getCollection('artists');
+
+  return artists.map((artist) => ({
+    params: { slug: artist.id },
+    props: { artist },
+  }));
+}
+
+const { artist } = Astro.props;
+const { data } = artist;
+
+// Get the raw markdown body
+const rawBody = data._rawBody as string | undefined;
+
+// Process the markdown content
+let htmlContent = '';
+if (rawBody) {
+  // Remove the first image reference (it's usually a portrait at the top)
+  let processedBody = rawBody.replace(/^!\[.*?\]\(.*?\)\s*/m, '');
+
+  // Remove the first h1 heading (title is already in layout)
+  processedBody = processedBody.replace(/^#\s+.+\n/m, '');
+
+  // Convert wiki links [[artist_name|Display Name]] to HTML links
+  processedBody = processedBody.replace(
+    /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g,
+    (match, pageName, displayName) => {
+      const slug = pageName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+      const text = displayName || pageName;
+      return `<a href="/artists/${slug}" class="wiki-link">${text}</a>`;
+    }
+  );
+
+  // Convert markdown to HTML
+  htmlContent = await marked.parse(processedBody, {
+    gfm: true,
+    breaks: false,
+  });
+}
+
+// Get title with fallback
+const title = (data.title as string) || artist.id.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
+---
+
+<WikiArticle title={title} data={data}>
+  <Fragment set:html={htmlContent} />
+</WikiArticle>
+
+<style is:global>
+  /* Style wiki links */
+  .wiki-link {
+    color: #3366cc;
+    text-decoration: none;
+  }
+
+  .wiki-link:hover {
+    text-decoration: underline;
+  }
+
+  /* Hide broken images (portraits that don't exist) */
+  .article-content img {
+    display: none;
+  }
+</style>

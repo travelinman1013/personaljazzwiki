@@ -1,0 +1,160 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = 'A personal wiki for music artists and their connections' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title} - PersonalJazzWiki</title>
+  </head>
+  <body class="bg-wiki-bg min-h-screen">
+    <!-- Header -->
+    <header class="bg-wiki-bg-content border-b border-wiki-border">
+      <div class="max-w-6xl mx-auto px-4 py-3">
+        <div class="flex items-center justify-between">
+          <!-- Logo/Title -->
+          <a href="/" class="flex items-center space-x-2 hover:no-underline">
+            <span class="text-xl font-serif text-wiki-text font-bold">PersonalJazzWiki</span>
+          </a>
+
+          <!-- Navigation -->
+          <nav class="flex items-center space-x-4">
+            <a href="/" class="text-wiki-link hover:text-wiki-link-hover text-sm">Home</a>
+            <a href="/artists" class="text-wiki-link hover:text-wiki-link-hover text-sm">All Artists</a>
+            <a href="/genres" class="text-wiki-link hover:text-wiki-link-hover text-sm">Genres</a>
+            <a href="/instruments" class="text-wiki-link hover:text-wiki-link-hover text-sm">Instruments</a>
+            <a href="/random" class="text-wiki-link hover:text-wiki-link-hover text-sm">Random</a>
+            <a href="/search" class="text-wiki-link hover:text-wiki-link-hover text-sm">Search</a>
+          </nav>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-4 py-6">
+      <div class="bg-wiki-bg-content border border-wiki-border rounded shadow-sm p-6">
+        <slot />
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-wiki-bg-content border-t border-wiki-border mt-8">
+      <div class="max-w-6xl mx-auto px-4 py-4">
+        <div class="flex flex-col md:flex-row justify-between items-center text-sm text-wiki-text-muted">
+          <p>PersonalJazzWiki - A personal encyclopedia of music artists</p>
+          <p class="mt-2 md:mt-0">
+            Data from <a href="https://musicbrainz.org" class="text-wiki-link hover:underline">MusicBrainz</a>,
+            <a href="https://spotify.com" class="text-wiki-link hover:underline">Spotify</a>, and
+            <a href="https://wikipedia.org" class="text-wiki-link hover:underline">Wikipedia</a>
+          </p>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Global Styles -->
+    <style is:global>
+      /* Wiki link styling */
+      .wiki-link {
+        color: #3366cc;
+        text-decoration: none;
+      }
+      .wiki-link:hover {
+        text-decoration: underline;
+      }
+
+      /* Red links for non-existent pages */
+      .wiki-link-new {
+        color: #d33;
+        text-decoration: none;
+      }
+      .wiki-link-new:hover {
+        text-decoration: underline;
+      }
+
+      /* Article content styling */
+      .article-content h1 {
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 1.8rem;
+        font-weight: 400;
+        border-bottom: 1px solid #a2a9b1;
+        padding-bottom: 0.25rem;
+        margin-bottom: 1rem;
+      }
+
+      .article-content h2 {
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 1.5rem;
+        font-weight: 400;
+        border-bottom: 1px solid #a2a9b1;
+        padding-bottom: 0.25rem;
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .article-content h3 {
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-top: 1.25rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .article-content p {
+        margin-bottom: 1rem;
+        line-height: 1.65;
+      }
+
+      .article-content ul,
+      .article-content ol {
+        margin-bottom: 1rem;
+        padding-left: 1.5rem;
+      }
+
+      .article-content li {
+        margin-bottom: 0.25rem;
+      }
+
+      .article-content a {
+        color: #3366cc;
+        text-decoration: none;
+      }
+
+      .article-content a:hover {
+        text-decoration: underline;
+      }
+
+      /* Table styling */
+      .article-content table {
+        border-collapse: collapse;
+        margin: 1rem 0;
+        width: 100%;
+      }
+
+      .article-content th,
+      .article-content td {
+        border: 1px solid #a2a9b1;
+        padding: 0.5rem;
+        text-align: left;
+      }
+
+      .article-content th {
+        background-color: #eaecf0;
+        font-weight: 600;
+      }
+
+      .article-content tr:nth-child(even) {
+        background-color: #f8f9fa;
+      }
+    </style>
+  </body>
+</html>

@@ -1,0 +1,211 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const allArtists = await getCollection('artists');
+
+  // Collect all unique instruments
+  const instrumentSet = new Set<string>();
+  allArtists.forEach(artist => {
+    const instruments = artist.data.instruments as string[] | undefined;
+    instruments?.forEach(instrument => instrumentSet.add(instrument));
+  });
+
+  // Helper to create slug
+  const toSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+
+  // Create a path for each instrument
+  return Array.from(instrumentSet).map(instrument => ({
+    params: { instrument: toSlug(instrument) },
+    props: { instrumentName: instrument },
+  }));
+}
+
+interface Props {
+  instrumentName: string;
+}
+
+const { instrumentName } = Astro.props;
+
+// Get all artists who play this instrument
+const allArtists = await getCollection('artists');
+const instrumentArtists = allArtists.filter(artist => {
+  const instruments = artist.data.instruments as string[] | undefined;
+  return instruments?.includes(instrumentName);
+});
+
+// Sort by Spotify popularity (if available), then alphabetically
+const sortedArtists = instrumentArtists.sort((a, b) => {
+  const popA = (a.data.spotify_data as { popularity?: number } | undefined)?.popularity || 0;
+  const popB = (b.data.spotify_data as { popularity?: number } | undefined)?.popularity || 0;
+  if (popB !== popA) return popB - popA;
+  const titleA = (a.data.title as string || a.id).toLowerCase();
+  const titleB = (b.data.title as string || b.id).toLowerCase();
+  return titleA.localeCompare(titleB);
+});
+
+// Get related instruments (instruments that appear with this one)
+const relatedInstrumentCounts = new Map<string, number>();
+instrumentArtists.forEach(artist => {
+  const instruments = artist.data.instruments as string[] | undefined;
+  instruments?.forEach(i => {
+    if (i !== instrumentName) {
+      relatedInstrumentCounts.set(i, (relatedInstrumentCounts.get(i) || 0) + 1);
+    }
+  });
+});
+const relatedInstruments = Array.from(relatedInstrumentCounts.entries())
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 10);
+
+// Get common genres for this instrument
+const genreCounts = new Map<string, number>();
+instrumentArtists.forEach(artist => {
+  const genres = artist.data.genres as string[] | undefined;
+  genres?.forEach(genre => {
+    genreCounts.set(genre, (genreCounts.get(genre) || 0) + 1);
+  });
+});
+const topGenres = Array.from(genreCounts.entries())
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 10);
+
+// Helper to create slug
+const toSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+
+// Get era distribution
+const eraCounts = new Map<string, number>();
+instrumentArtists.forEach(artist => {
+  const yearsActive = artist.data.years_active as string | undefined;
+  if (yearsActive) {
+    const match = yearsActive.match(/(\d{4})/);
+    if (match) {
+      const decade = Math.floor(parseInt(match[1]) / 10) * 10;
+      const era = `${decade}s`;
+      eraCounts.set(era, (eraCounts.get(era) || 0) + 1);
+    }
+  }
+});
+const sortedEras = Array.from(eraCounts.entries())
+  .sort((a, b) => a[0].localeCompare(b[0]));
+
+// Stats
+const avgPopularity = Math.round(
+  instrumentArtists
+    .filter(a => (a.data.spotify_data as { popularity?: number } | undefined)?.popularity)
+    .reduce((sum, a) => sum + ((a.data.spotify_data as { popularity?: number })?.popularity || 0), 0) /
+  instrumentArtists.filter(a => (a.data.spotify_data as { popularity?: number } | undefined)?.popularity).length || 0
+);
+---
+
+<Layout title={instrumentName}>
+  <div class="article-content">
+    <h1>{instrumentName}</h1>
+
+    <p class="text-wiki-text-secondary mb-6">
+      <strong>{instrumentArtists.length.toLocaleString()}</strong> artists play this instrument.
+      {avgPopularity > 0 && (
+        <> Average Spotify popularity: <strong>{avgPopularity}/100</strong>.</>
+      )}
+    </p>
+
+    <!-- Instrument Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+      <!-- Top Genres -->
+      {topGenres.length > 0 && (
+        <div class="bg-wiki-bg border border-wiki-border rounded p-4">
+          <h3 class="font-semibold mb-2 text-wiki-text">Common Genres</h3>
+          <div class="flex flex-wrap gap-1">
+            {topGenres.map(([genre, count]) => (
+              <a
+                href={`/genres/${toSlug(genre)}`}
+                class="inline-flex items-center px-2 py-1 bg-wiki-tag-bg border border-wiki-tag-border rounded text-xs hover:bg-wiki-accent-light transition-colors"
+              >
+                <span class="text-wiki-link">{genre}</span>
+                <span class="ml-1 text-wiki-text-muted">({count})</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <!-- Related Instruments -->
+      {relatedInstruments.length > 0 && (
+        <div class="bg-wiki-bg border border-wiki-border rounded p-4">
+          <h3 class="font-semibold mb-2 text-wiki-text">Often Paired With</h3>
+          <div class="flex flex-wrap gap-1">
+            {relatedInstruments.map(([instrument, count]) => (
+              <a
+                href={`/instruments/${toSlug(instrument)}`}
+                class="inline-flex items-center px-2 py-1 bg-wiki-tag-bg border border-wiki-tag-border rounded text-xs hover:bg-wiki-accent-light transition-colors"
+              >
+                <span class="text-wiki-link">{instrument}</span>
+                <span class="ml-1 text-wiki-text-muted">({count})</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+
+    <!-- Era Distribution -->
+    {sortedEras.length > 0 && (
+      <div class="bg-wiki-bg border border-wiki-border rounded p-4 mb-8">
+        <h3 class="font-semibold mb-3 text-wiki-text">Activity by Era</h3>
+        <div class="flex flex-wrap gap-2">
+          {sortedEras.map(([era, count]) => (
+            <span class="inline-flex items-center px-2 py-1 bg-white border border-wiki-border-light rounded text-sm">
+              <span class="font-medium">{era}</span>
+              <span class="ml-1 text-wiki-text-muted text-xs">({count})</span>
+            </span>
+          ))}
+        </div>
+      </div>
+    )}
+
+    <!-- Artists List -->
+    <h2>Artists ({instrumentArtists.length})</h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+      {sortedArtists.map(artist => {
+        const spotifyData = artist.data.spotify_data as { popularity?: number; followers?: number } | undefined;
+        const otherInstruments = (artist.data.instruments as string[] | undefined)?.filter(i => i !== instrumentName).slice(0, 2) || [];
+        const genres = (artist.data.genres as string[] | undefined)?.slice(0, 2) || [];
+
+        return (
+          <a
+            href={`/artists/${artist.id}`}
+            class="block p-3 bg-wiki-bg border border-wiki-border-light rounded hover:border-wiki-link hover:bg-wiki-accent-light transition-colors"
+          >
+            <div class="flex items-start justify-between">
+              <span class="text-wiki-link font-medium">{artist.data.title || artist.id}</span>
+              {spotifyData?.popularity && (
+                <span class="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">
+                  {spotifyData.popularity}
+                </span>
+              )}
+            </div>
+            {genres.length > 0 && (
+              <div class="text-xs text-wiki-text-muted mt-1 truncate">
+                {genres.join(', ')}
+              </div>
+            )}
+            {otherInstruments.length > 0 && (
+              <div class="text-xs text-wiki-text-muted mt-0.5 truncate">
+                Also plays: {otherInstruments.join(', ')}
+              </div>
+            )}
+          </a>
+        );
+      })}
+    </div>
+
+    <!-- Back Link -->
+    <div class="mt-8 pt-4 border-t border-wiki-border">
+      <a href="/instruments" class="text-wiki-link hover:underline">
+        &larr; Back to all instruments
+      </a>
+    </div>
+  </div>
+</Layout>

@@ -1,0 +1,164 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+// Get all artists
+const allArtists = await getCollection('artists');
+
+// Count artists per instrument
+const instrumentCounts = new Map<string, number>();
+
+allArtists.forEach(artist => {
+  const instruments = artist.data.instruments as string[] | undefined;
+  instruments?.forEach(instrument => {
+    instrumentCounts.set(instrument, (instrumentCounts.get(instrument) || 0) + 1);
+  });
+});
+
+// Sort instruments by count (descending), then alphabetically
+const sortedInstruments = Array.from(instrumentCounts.entries())
+  .sort((a, b) => {
+    if (b[1] !== a[1]) return b[1] - a[1];
+    return a[0].localeCompare(b[0]);
+  });
+
+// Helper to create slug
+const toSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+
+// Group instruments by category
+const categorizeInstrument = (instrument: string): string => {
+  const lowerInstrument = instrument.toLowerCase();
+
+  // Strings
+  if (['guitar', 'bass', 'violin', 'viola', 'cello', 'double bass', 'banjo', 'mandolin', 'ukulele', 'harp', 'sitar'].some(s => lowerInstrument.includes(s))) {
+    return 'Strings';
+  }
+  // Keyboards
+  if (['piano', 'keyboard', 'organ', 'synthesizer', 'accordion', 'harpsichord', 'rhodes', 'mellotron'].some(s => lowerInstrument.includes(s))) {
+    return 'Keyboards';
+  }
+  // Brass
+  if (['trumpet', 'trombone', 'tuba', 'french horn', 'cornet', 'flugelhorn', 'euphonium'].some(s => lowerInstrument.includes(s))) {
+    return 'Brass';
+  }
+  // Woodwinds
+  if (['saxophone', 'clarinet', 'flute', 'oboe', 'bassoon', 'recorder', 'harmonica'].some(s => lowerInstrument.includes(s))) {
+    return 'Woodwinds';
+  }
+  // Percussion
+  if (['drum', 'percussion', 'timpani', 'vibraphone', 'marimba', 'xylophone', 'congas', 'bongos', 'tambourine', 'cymbals'].some(s => lowerInstrument.includes(s))) {
+    return 'Percussion';
+  }
+  // Voice
+  if (['voice', 'vocal', 'singing'].some(s => lowerInstrument.includes(s))) {
+    return 'Voice';
+  }
+  // Electronic
+  if (['turntable', 'sampler', 'drum machine', 'sequencer', 'dj'].some(s => lowerInstrument.includes(s))) {
+    return 'Electronic';
+  }
+
+  return 'Other';
+};
+
+// Group by category
+const instrumentsByCategory = new Map<string, Array<[string, number]>>();
+sortedInstruments.forEach(([instrument, count]) => {
+  const category = categorizeInstrument(instrument);
+  if (!instrumentsByCategory.has(category)) {
+    instrumentsByCategory.set(category, []);
+  }
+  instrumentsByCategory.get(category)!.push([instrument, count]);
+});
+
+// Sort categories by total count
+const categoryOrder = ['Voice', 'Strings', 'Keyboards', 'Brass', 'Woodwinds', 'Percussion', 'Electronic', 'Other'];
+const sortedCategories = categoryOrder
+  .filter(cat => instrumentsByCategory.has(cat))
+  .map(cat => [cat, instrumentsByCategory.get(cat)!] as [string, Array<[string, number]>]);
+
+// Stats
+const totalInstruments = instrumentCounts.size;
+const totalArtists = allArtists.length;
+const topInstrument = sortedInstruments[0];
+---
+
+<Layout title="Instruments">
+  <div class="article-content">
+    <h1>Browse by Instrument</h1>
+
+    <p class="text-wiki-text-secondary mb-6">
+      Explore <strong>{totalInstruments}</strong> instruments across <strong>{totalArtists.toLocaleString()}</strong> artists.
+      {topInstrument && (
+        <>
+          The most common instrument is <a href={`/instruments/${toSlug(topInstrument[0])}`} class="text-wiki-link">{topInstrument[0]}</a> with {topInstrument[1].toLocaleString()} artists.
+        </>
+      )}
+    </p>
+
+    <!-- Top Instruments Quick Links -->
+    <div class="bg-wiki-accent-light border border-wiki-border rounded p-4 mb-8">
+      <h2 class="text-lg font-serif mb-3">Top Instruments</h2>
+      <div class="flex flex-wrap gap-2">
+        {sortedInstruments.slice(0, 15).map(([instrument, count]) => (
+          <a
+            href={`/instruments/${toSlug(instrument)}`}
+            class="inline-flex items-center px-3 py-1.5 bg-white border border-wiki-border rounded text-sm hover:bg-wiki-bg hover:border-wiki-link transition-colors"
+          >
+            <span class="text-wiki-link font-medium">{instrument}</span>
+            <span class="ml-2 text-wiki-text-muted text-xs">({count.toLocaleString()})</span>
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <!-- Instruments by Category -->
+    <div class="space-y-8">
+      {sortedCategories.map(([category, instruments]) => {
+        const categoryTotal = instruments.reduce((sum, [_, count]) => sum + count, 0);
+        return (
+          <section>
+            <h2 class="text-xl font-serif border-b border-wiki-border pb-2 mb-4">
+              {category}
+              <span class="text-wiki-text-muted text-sm font-normal ml-2">
+                ({instruments.length} instruments)
+              </span>
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+              {instruments.map(([instrument, count]) => (
+                <a
+                  href={`/instruments/${toSlug(instrument)}`}
+                  class="flex items-center justify-between p-2 hover:bg-wiki-accent-light rounded border border-transparent hover:border-wiki-border-light transition-colors"
+                >
+                  <span class="text-wiki-link">{instrument}</span>
+                  <span class="text-wiki-text-muted text-sm">{count.toLocaleString()} artists</span>
+                </a>
+              ))}
+            </div>
+          </section>
+        );
+      })}
+    </div>
+
+    <!-- All Instruments Alphabetical (collapsed) -->
+    <details class="mt-8 border border-wiki-border rounded">
+      <summary class="p-4 bg-wiki-bg-nav cursor-pointer hover:bg-wiki-accent-light font-medium">
+        View all {totalInstruments} instruments alphabetically
+      </summary>
+      <div class="p-4 max-h-96 overflow-y-auto">
+        <div class="columns-2 md:columns-3 lg:columns-4 gap-4">
+          {Array.from(instrumentCounts.entries())
+            .sort((a, b) => a[0].localeCompare(b[0]))
+            .map(([instrument, count]) => (
+              <a
+                href={`/instruments/${toSlug(instrument)}`}
+                class="block text-wiki-link hover:underline text-sm py-0.5 break-inside-avoid"
+              >
+                {instrument} <span class="text-wiki-text-muted">({count})</span>
+              </a>
+            ))}
+        </div>
+      </div>
+    </details>
+  </div>
+</Layout>

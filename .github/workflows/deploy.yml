@@ -1,0 +1,73 @@
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Copy content from content-deploy to src/content/artists and public/portraits
+      # This is needed because the Astro config expects files in these locations
+      - name: Setup content for build
+        run: |
+          # Create directories if they don't exist
+          mkdir -p src/content/artists
+          mkdir -p public/portraits
+
+          # Copy artists if content-deploy exists
+          if [ -d "content-deploy/artists" ]; then
+            echo "Copying artists from content-deploy..."
+            cp -r content-deploy/artists/* src/content/artists/ 2>/dev/null || true
+          fi
+
+          # Copy portraits if content-deploy exists
+          if [ -d "content-deploy/portraits" ]; then
+            echo "Copying portraits from content-deploy..."
+            cp -r content-deploy/portraits/* public/portraits/ 2>/dev/null || true
+          fi
+
+          # Count files
+          ARTIST_COUNT=$(find src/content/artists -name "*.md" 2>/dev/null | wc -l || echo 0)
+          PORTRAIT_COUNT=$(find public/portraits -type f 2>/dev/null | wc -l || echo 0)
+          echo "Found $ARTIST_COUNT artist files and $PORTRAIT_COUNT portrait images"
+
+      - name: Build site
+        run: npm run build
+
+      - name: Run Pagefind indexing
+        run: npx pagefind --site dist
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: personal-artist-wiki
+          directory: dist
+          # Optional: Enable this for GitHub Deployments
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          # Optional: Change the branch name
+          branch: ${{ github.ref_name }}
+          # Optional: Specify wrangler version
+          wranglerVersion: '3'

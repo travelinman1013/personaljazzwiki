@@ -1,0 +1,175 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+// Get all artists
+const allArtists = await getCollection('artists');
+
+// Count artists per genre
+const genreCounts = new Map<string, number>();
+const genreArtists = new Map<string, typeof allArtists>();
+
+allArtists.forEach(artist => {
+  const genres = artist.data.genres as string[] | undefined;
+  genres?.forEach(genre => {
+    genreCounts.set(genre, (genreCounts.get(genre) || 0) + 1);
+
+    if (!genreArtists.has(genre)) {
+      genreArtists.set(genre, []);
+    }
+    genreArtists.get(genre)!.push(artist);
+  });
+});
+
+// Sort genres by count (descending), then alphabetically
+const sortedGenres = Array.from(genreCounts.entries())
+  .sort((a, b) => {
+    if (b[1] !== a[1]) return b[1] - a[1];
+    return a[0].localeCompare(b[0]);
+  });
+
+// Helper to create slug
+const toSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+
+// Group genres by category (rough categorization based on common patterns)
+const categorizeGenre = (genre: string): string => {
+  const lowerGenre = genre.toLowerCase();
+
+  if (lowerGenre.includes('jazz') || lowerGenre.includes('bebop') || lowerGenre.includes('swing')) {
+    return 'Jazz';
+  } else if (lowerGenre.includes('blues')) {
+    return 'Blues';
+  } else if (lowerGenre.includes('rock') || lowerGenre.includes('punk') || lowerGenre.includes('metal')) {
+    return 'Rock';
+  } else if (lowerGenre.includes('hip hop') || lowerGenre.includes('rap')) {
+    return 'Hip Hop';
+  } else if (lowerGenre.includes('electronic') || lowerGenre.includes('house') || lowerGenre.includes('techno')) {
+    return 'Electronic';
+  } else if (lowerGenre.includes('soul') || lowerGenre.includes('r&b') || lowerGenre.includes('funk')) {
+    return 'Soul & R&B';
+  } else if (lowerGenre.includes('country') || lowerGenre.includes('folk') || lowerGenre.includes('bluegrass')) {
+    return 'Country & Folk';
+  } else if (lowerGenre.includes('classical') || lowerGenre.includes('orchestra')) {
+    return 'Classical';
+  } else if (lowerGenre.includes('latin') || lowerGenre.includes('salsa') || lowerGenre.includes('bossa')) {
+    return 'Latin';
+  } else if (lowerGenre.includes('reggae') || lowerGenre.includes('ska') || lowerGenre.includes('dub')) {
+    return 'Reggae';
+  } else if (lowerGenre.includes('gospel') || lowerGenre.includes('spiritual')) {
+    return 'Gospel';
+  } else if (lowerGenre.includes('world') || lowerGenre.includes('african') || lowerGenre.includes('asian')) {
+    return 'World';
+  } else if (lowerGenre.includes('pop')) {
+    return 'Pop';
+  }
+  return 'Other';
+};
+
+// Group by category
+const genresByCategory = new Map<string, Array<[string, number]>>();
+sortedGenres.forEach(([genre, count]) => {
+  const category = categorizeGenre(genre);
+  if (!genresByCategory.has(category)) {
+    genresByCategory.set(category, []);
+  }
+  genresByCategory.get(category)!.push([genre, count]);
+});
+
+// Sort categories by total artist count
+const sortedCategories = Array.from(genresByCategory.entries())
+  .sort((a, b) => {
+    const totalA = a[1].reduce((sum, [_, count]) => sum + count, 0);
+    const totalB = b[1].reduce((sum, [_, count]) => sum + count, 0);
+    return totalB - totalA;
+  });
+
+// Stats
+const totalGenres = genreCounts.size;
+const totalArtists = allArtists.length;
+const topGenre = sortedGenres[0];
+---
+
+<Layout title="Genres">
+  <div class="article-content">
+    <h1>Browse by Genre</h1>
+
+    <p class="text-wiki-text-secondary mb-6">
+      Explore <strong>{totalGenres}</strong> genres across <strong>{totalArtists.toLocaleString()}</strong> artists.
+      {topGenre && (
+        <>
+          The most common genre is <a href={`/genres/${toSlug(topGenre[0])}`} class="text-wiki-link">{topGenre[0]}</a> with {topGenre[1].toLocaleString()} artists.
+        </>
+      )}
+    </p>
+
+    <!-- Top Genres Quick Links -->
+    <div class="bg-wiki-accent-light border border-wiki-border rounded p-4 mb-8">
+      <h2 class="text-lg font-serif mb-3">Top Genres</h2>
+      <div class="flex flex-wrap gap-2">
+        {sortedGenres.slice(0, 20).map(([genre, count]) => (
+          <a
+            href={`/genres/${toSlug(genre)}`}
+            class="inline-flex items-center px-3 py-1.5 bg-white border border-wiki-border rounded text-sm hover:bg-wiki-bg hover:border-wiki-link transition-colors"
+          >
+            <span class="text-wiki-link font-medium">{genre}</span>
+            <span class="ml-2 text-wiki-text-muted text-xs">({count.toLocaleString()})</span>
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <!-- Genres by Category -->
+    <div class="space-y-8">
+      {sortedCategories.map(([category, genres]) => {
+        const categoryTotal = genres.reduce((sum, [_, count]) => sum + count, 0);
+        return (
+          <section>
+            <h2 class="text-xl font-serif border-b border-wiki-border pb-2 mb-4">
+              {category}
+              <span class="text-wiki-text-muted text-sm font-normal ml-2">
+                ({genres.length} genres, {categoryTotal.toLocaleString()} artists)
+              </span>
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+              {genres.slice(0, 30).map(([genre, count]) => (
+                <a
+                  href={`/genres/${toSlug(genre)}`}
+                  class="flex items-center justify-between p-2 hover:bg-wiki-accent-light rounded border border-transparent hover:border-wiki-border-light transition-colors"
+                >
+                  <span class="text-wiki-link">{genre}</span>
+                  <span class="text-wiki-text-muted text-sm">{count.toLocaleString()} artists</span>
+                </a>
+              ))}
+              {genres.length > 30 && (
+                <div class="p-2 text-wiki-text-muted text-sm italic">
+                  +{genres.length - 30} more genres...
+                </div>
+              )}
+            </div>
+          </section>
+        );
+      })}
+    </div>
+
+    <!-- All Genres Alphabetical (collapsed) -->
+    <details class="mt-8 border border-wiki-border rounded">
+      <summary class="p-4 bg-wiki-bg-nav cursor-pointer hover:bg-wiki-accent-light font-medium">
+        View all {totalGenres} genres alphabetically
+      </summary>
+      <div class="p-4 max-h-96 overflow-y-auto">
+        <div class="columns-2 md:columns-3 lg:columns-4 gap-4">
+          {Array.from(genreCounts.entries())
+            .sort((a, b) => a[0].localeCompare(b[0]))
+            .map(([genre, count]) => (
+              <a
+                href={`/genres/${toSlug(genre)}`}
+                class="block text-wiki-link hover:underline text-sm py-0.5 break-inside-avoid"
+              >
+                {genre} <span class="text-wiki-text-muted">({count})</span>
+              </a>
+            ))}
+        </div>
+      </div>
+    </details>
+  </div>
+</Layout>

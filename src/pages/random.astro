@@ -1,0 +1,13 @@
+---
+import { getCollection } from 'astro:content';
+
+// Get all artists
+const allArtists = await getCollection('artists');
+
+// Pick a random artist
+const randomIndex = Math.floor(Math.random() * allArtists.length);
+const randomArtist = allArtists[randomIndex];
+
+// Redirect to the random artist page
+return Astro.redirect(`/artists/${randomArtist.id}`);
+---

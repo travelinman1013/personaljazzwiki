@@ -1,0 +1,155 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Search" description="Search the PersonalJazzWiki for artists, genres, and instruments">
+  <article class="article-content">
+    <h1>Search</h1>
+
+    <p class="text-wiki-text-muted mb-4">
+      Search through 2,500+ musician profiles. Try searching for artist names, genres (jazz, bebop, cool jazz),
+      instruments (saxophone, piano, trumpet), or time periods.
+    </p>
+
+    <!-- Pagefind Search UI Container -->
+    <div id="search" class="mt-6"></div>
+  </article>
+</Layout>
+
+<!-- Pagefind UI Styles -->
+<link href="/pagefind/pagefind-ui.css" rel="stylesheet" />
+
+<!-- Custom Pagefind Styles to match wiki theme -->
+<style is:global>
+  /* Pagefind search input styling */
+  .pagefind-ui__search-input {
+    border: 1px solid #a2a9b1 !important;
+    border-radius: 4px !important;
+    font-size: 1rem !important;
+    padding: 0.75rem 1rem !important;
+    width: 100% !important;
+  }
+
+  .pagefind-ui__search-input:focus {
+    border-color: #3366cc !important;
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgba(51, 102, 204, 0.2) !important;
+  }
+
+  /* Search button styling */
+  .pagefind-ui__search-clear {
+    color: #72777d !important;
+  }
+
+  /* Results styling */
+  .pagefind-ui__result {
+    border-bottom: 1px solid #eaecf0 !important;
+    padding: 1rem 0 !important;
+  }
+
+  .pagefind-ui__result-title {
+    font-family: Georgia, 'Times New Roman', serif !important;
+    font-size: 1.25rem !important;
+    font-weight: 400 !important;
+  }
+
+  .pagefind-ui__result-link {
+    color: #3366cc !important;
+    text-decoration: none !important;
+  }
+
+  .pagefind-ui__result-link:hover {
+    text-decoration: underline !important;
+  }
+
+  .pagefind-ui__result-excerpt {
+    color: #54595d !important;
+    font-size: 0.9rem !important;
+    line-height: 1.5 !important;
+    margin-top: 0.5rem !important;
+  }
+
+  /* Result metadata */
+  .pagefind-ui__result-nested {
+    padding-left: 1rem !important;
+    border-left: 2px solid #eaecf0 !important;
+    margin-top: 0.5rem !important;
+  }
+
+  /* Message styling */
+  .pagefind-ui__message {
+    color: #72777d !important;
+    font-style: italic !important;
+    padding: 1rem 0 !important;
+  }
+
+  /* Highlight styling */
+  .pagefind-ui__result-excerpt mark {
+    background-color: #fff3cd !important;
+    color: inherit !important;
+    padding: 0.1rem 0.2rem !important;
+    border-radius: 2px !important;
+  }
+
+  /* Filter button styling */
+  .pagefind-ui__filter-panel {
+    border: 1px solid #eaecf0 !important;
+    border-radius: 4px !important;
+    padding: 1rem !important;
+    margin-bottom: 1rem !important;
+    background-color: #f8f9fa !important;
+  }
+
+  .pagefind-ui__filter-name {
+    font-weight: 600 !important;
+    color: #202122 !important;
+  }
+
+  /* Loading indicator */
+  .pagefind-ui__loading {
+    color: #72777d !important;
+  }
+</style>
+
+<!-- Pagefind UI Script - loaded at runtime after build -->
+<script is:inline>
+  // Load Pagefind UI when the page is ready
+  // Pagefind is generated after build, so we need to load it dynamically at runtime
+  async function loadPagefind() {
+    try {
+      // Dynamically import the Pagefind UI script
+      const pagefindModule = await import('/pagefind/pagefind-ui.js');
+      const PagefindUI = pagefindModule.PagefindUI || pagefindModule.default?.PagefindUI;
+
+      if (PagefindUI) {
+        new PagefindUI({
+          element: '#search',
+          showSubResults: true,
+          showImages: false,
+          excerptLength: 20,
+          resetStyles: false,
+          translations: {
+            placeholder: 'Search artists, genres, instruments...',
+            zero_results: 'No artists found for "[SEARCH_TERM]"',
+            many_results: '[COUNT] artists found',
+            one_result: '[COUNT] artist found',
+            searching: 'Searching...'
+          }
+        });
+      } else {
+        console.error('PagefindUI not found in module');
+        document.getElementById('search').innerHTML = '<p class="text-wiki-text-muted">Search is being built. Please try again in a moment.</p>';
+      }
+    } catch (error) {
+      console.error('Failed to load Pagefind:', error);
+      document.getElementById('search').innerHTML = '<p class="text-wiki-text-muted">Search is currently unavailable. The search index may still be building.</p>';
+    }
+  }
+
+  // Initialize when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadPagefind);
+  } else {
+    loadPagefind();
+  }
+</script>
