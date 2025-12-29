@@ -7,10 +7,9 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WEB_DIR="$(dirname "$SCRIPT_DIR")"
-PROJECT_ROOT="$(dirname "$WEB_DIR")"
 
-# Source directories (local Obsidian vault)
-ARTISTS_SOURCE="$PROJECT_ROOT/Artists"
+# Source directories (absolute paths to Obsidian vault)
+ARTISTS_SOURCE="/Users/maxwell/LETSGO/MaxVault/01_Projects/PersonalArtistWiki/Artists"
 PORTRAITS_SOURCE="/Users/maxwell/LETSGO/MaxVault/03_Resources/source_material/ArtistPortraits"
 
 # Destination directories (committed to repo for deployment)
@@ -28,7 +27,7 @@ mkdir -p "$PORTRAITS_DEST"
 # Sync artists markdown files
 if [ -d "$ARTISTS_SOURCE" ]; then
     echo "Syncing artists from: $ARTISTS_SOURCE"
-    rsync -av --delete --exclude='.DS_Store' "$ARTISTS_SOURCE/" "$ARTISTS_DEST/"
+    rsync -av --delete --exclude='.DS_Store' --exclude='.backup' "$ARTISTS_SOURCE/" "$ARTISTS_DEST/"
     ARTIST_COUNT=$(find "$ARTISTS_DEST" -name "*.md" | wc -l | tr -d ' ')
     echo "Synced $ARTIST_COUNT artist files"
 else

@@ -6,6 +6,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 PersonalJazzWiki is a static site generator that creates a Wikipedia-style wiki for 3,400+ musician profiles. Built with Astro, it generates ~4,000 HTML pages from markdown files stored in an Obsidian vault.
 
+## Project Location
+
+This web app lives **outside** the Obsidian vault to avoid sync overhead from node_modules, dist, and build artifacts.
+
+- **Web App:** `/Users/maxwell/Projects/artistWiki_Web/`
+- **Artist Source:** `/Users/maxwell/LETSGO/MaxVault/01_Projects/PersonalArtistWiki/Artists/`
+- **Portrait Source:** `/Users/maxwell/LETSGO/MaxVault/03_Resources/source_material/ArtistPortraits/`
+
+Content is synced from the Obsidian vault on demand via `./scripts/sync-content.sh`.
+
 ## Commands
 
 ```bash
