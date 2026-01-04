@@ -1,14 +1,16 @@
 ---
 import Layout from './Layout.astro';
 import Infobox from '../components/Infobox.astro';
+import TableOfContents from '../components/TableOfContents.astro';
 
 interface Props {
   title: string;
   data: Record<string, unknown>;
   description?: string;
+  headings?: { id: string; text: string }[];
 }
 
-const { title, data, description } = Astro.props;
+const { title, data, description, headings = [] } = Astro.props;
 
 // Generate description from genres if not provided
 const genres = (data.genres || []) as string[];
@@ -17,32 +19,77 @@ const autoDescription = description || `${title} - ${genres.slice(0, 3).join(', 
 ---
 
 <Layout title={title} description={autoDescription}>
-  <article class="wiki-article">
-    <!-- Article Header -->
-    <header class="mb-4">
-      <h1 class="font-serif text-3xl font-normal border-b border-wiki-border pb-2 text-wiki-text">
-        {title}
-      </h1>
-    </header>
+  <div class="wiki-layout">
+    <!-- TOC Sidebar (left, desktop only) -->
+    <aside class="toc-sidebar">
+      <TableOfContents headings={headings} />
+    </aside>
 
-    <!-- Two-column layout with floated infobox -->
-    <div class="article-body clearfix">
-      <!-- Infobox (floated right) -->
-      <Infobox title={title} data={data} />
+    <!-- Main Article -->
+    <article class="wiki-article">
+      <!-- Article Header -->
+      <header class="mb-4">
+        <h1 class="font-serif text-3xl font-normal border-b border-wiki-border pb-2 text-wiki-text">
+          {title}
+        </h1>
+      </header>
 
-      <!-- Article Content -->
-      <div class="article-content prose prose-wiki max-w-none">
-        <slot />
+      <!-- Mobile TOC (shows at top on mobile) -->
+      <div class="toc-mobile-container">
+        <TableOfContents headings={headings} />
       </div>
-    </div>
-  </article>
+
+      <!-- Two-column layout with floated infobox -->
+      <div class="article-body clearfix">
+        <!-- Infobox (floated right) -->
+        <Infobox title={title} data={data} />
+
+        <!-- Article Content -->
+        <div class="article-content prose prose-wiki max-w-none">
+          <slot />
+        </div>
+      </div>
+    </article>
+  </div>
 </Layout>
 
 <style>
+  /* Main layout container */
+  .wiki-layout {
+    display: flex;
+    gap: 1.5rem;
+    max-width: 100%;
+  }
+
+  /* TOC Sidebar - hidden on mobile, visible on desktop */
+  .toc-sidebar {
+    display: none;
+    flex-shrink: 0;
+    width: 180px;
+  }
+
+  /* Mobile TOC container - shown on mobile, hidden on desktop */
+  .toc-mobile-container {
+    display: block;
+    margin-bottom: 1rem;
+  }
+
+  /* Desktop layout */
+  @media (min-width: 1024px) {
+    .toc-sidebar {
+      display: block;
+    }
+    .toc-mobile-container {
+      display: none;
+    }
+  }
+
   .wiki-article {
     font-family: system-ui, -apple-system, sans-serif;
     color: #202122;
     line-height: 1.65;
+    flex: 1;
+    min-width: 0;
   }
 
   .clearfix::after {

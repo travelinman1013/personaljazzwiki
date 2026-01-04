@@ -1,0 +1,130 @@
+---
+interface Props {
+  headings: { id: string; text: string }[];
+}
+
+const { headings } = Astro.props;
+---
+
+{headings.length > 0 && (
+  <nav class="toc">
+    <details class="toc-mobile" open>
+      <summary class="toc-title">Contents</summary>
+      <ol class="toc-list">
+        {headings.map((h, i) => (
+          <li>
+            <a href={`#${h.id}`}><span class="toc-number">{i + 1}</span> {h.text}</a>
+          </li>
+        ))}
+      </ol>
+    </details>
+    <div class="toc-desktop">
+      <div class="toc-title">Contents</div>
+      <ol class="toc-list">
+        {headings.map((h, i) => (
+          <li>
+            <a href={`#${h.id}`}><span class="toc-number">{i + 1}</span> {h.text}</a>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </nav>
+)}
+
+<style>
+  .toc {
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+
+  /* Desktop: Sticky sidebar */
+  .toc-desktop {
+    display: none;
+    position: sticky;
+    top: 1rem;
+    border: 1px solid #a2a9b1;
+    background: #f8f9fa;
+    padding: 0.75rem;
+    border-radius: 2px;
+  }
+
+  .toc-desktop .toc-title {
+    font-weight: 600;
+    text-align: center;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #a2a9b1;
+    margin-bottom: 0.5rem;
+  }
+
+  /* Mobile: Collapsible at top */
+  .toc-mobile {
+    display: block;
+    border: 1px solid #a2a9b1;
+    background: #f8f9fa;
+    margin-bottom: 1rem;
+    border-radius: 2px;
+  }
+
+  .toc-mobile summary.toc-title {
+    font-weight: 600;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .toc-mobile summary.toc-title::-webkit-details-marker {
+    display: none;
+  }
+
+  .toc-mobile summary.toc-title::before {
+    content: '\25B6';
+    display: inline-block;
+    margin-right: 0.5rem;
+    font-size: 0.7em;
+    transition: transform 0.2s;
+  }
+
+  .toc-mobile[open] summary.toc-title::before {
+    transform: rotate(90deg);
+  }
+
+  .toc-mobile .toc-list {
+    padding: 0 0.75rem 0.75rem;
+  }
+
+  /* Shared list styles */
+  .toc-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .toc-list li {
+    padding: 0.2rem 0;
+  }
+
+  .toc-list a {
+    color: #3366cc;
+    text-decoration: none;
+    display: block;
+  }
+
+  .toc-list a:hover {
+    text-decoration: underline;
+  }
+
+  .toc-number {
+    color: #72777d;
+    margin-right: 0.25rem;
+  }
+
+  /* Desktop: show sidebar, hide mobile */
+  @media (min-width: 1024px) {
+    .toc-mobile {
+      display: none;
+    }
+    .toc-desktop {
+      display: block;
+    }
+  }
+</style>

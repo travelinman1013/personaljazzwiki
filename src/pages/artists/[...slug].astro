@@ -20,6 +20,7 @@ const rawBody = data._rawBody as string | undefined;
 
 // Process the markdown content
 let htmlContent = '';
+let researchSources: string[] = [];
 if (rawBody) {
   // Remove the first image reference (it's usually a portrait at the top)
   let processedBody = rawBody.replace(/^!\[.*?\]\(.*?\)\s*/m, '');
@@ -37,18 +38,73 @@ if (rawBody) {
     }
   );
 
+  // Extract research sources from markdown (preserves order: Source1=index 0, etc.)
+  const sourcesMatch = processedBody.match(/\*Sources:\s*(.+?)\*/);
+  if (sourcesMatch) {
+    const sourceLinksRegex = /\[Source\d+\]\(([^)]+)\)/g;
+    let match;
+    while ((match = sourceLinksRegex.exec(sourcesMatch[1])) !== null) {
+      researchSources.push(match[1]); // Extract URL
+    }
+  }
+
+  // Remove enhancement text and sources from body
+  processedBody = processedBody.replace(/\*Enhanced with Perplexity AI research\*\s*\n?/g, '');
+  processedBody = processedBody.replace(/\*Sources:.*\*\s*\n?/g, '');
+
   // Convert markdown to HTML
   htmlContent = await marked.parse(processedBody, {
     gfm: true,
     breaks: false,
   });
+
+  // Add IDs to all h2 headings for TOC navigation
+  htmlContent = htmlContent.replace(/<h2>([^<]+)<\/h2>/gi, (match, text) => {
+    const id = text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+    return `<h2 id="${id}">${text}</h2>`;
+  });
+
+  // Build References HTML section
+  let referencesHtml = '';
+  if (researchSources.length > 0) {
+    referencesHtml = `
+<h2 id="references">References</h2>
+<ol class="references-list">
+${researchSources.map((url, i) => `  <li id="ref-${i+1}"><a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a></li>`).join('\n')}
+</ol>
+`;
+  }
+
+  // Inject References section before External Links
+  if (htmlContent.includes('<h2 id="external-links">')) {
+    htmlContent = htmlContent.replace(
+      /<h2 id="external-links">/i,
+      `${referencesHtml}<h2 id="external-links">`
+    );
+  } else if (htmlContent.includes('<h2>External Links</h2>')) {
+    htmlContent = htmlContent.replace(
+      /<h2>External Links<\/h2>/i,
+      `${referencesHtml}<h2 id="external-links">External Links</h2>`
+    );
+  } else if (referencesHtml) {
+    // No External Links section, append References at the end
+    htmlContent += referencesHtml;
+  }
+}
+
+// Extract h2 headings for table of contents
+const headings: { id: string; text: string }[] = [];
+const headingRegex = /<h2 id="([^"]+)">([^<]+)<\/h2>/gi;
+let headingMatch;
+while ((headingMatch = headingRegex.exec(htmlContent)) !== null) {
+  headings.push({ id: headingMatch[1], text: headingMatch[2] });
 }
 
 // Get title with fallback
 const title = (data.title as string) || artist.id.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
 ---
 
-<WikiArticle title={title} data={data}>
+<WikiArticle title={title} data={data} headings={headings}>
   <Fragment set:html={htmlContent} />
 </WikiArticle>
 
@@ -66,5 +122,26 @@ const title = (data.title as string) || artist.id.replace(/-/g, ' ').replace(/\b
   /* Hide broken images (portraits that don't exist) */
   .article-content img {
     display: none;
+  }
+
+  /* References list styling */
+  .references-list {
+    list-style-position: inside;
+    padding-left: 0;
+    margin: 1rem 0;
+  }
+
+  .references-list li {
+    padding: 0.25rem 0;
+    word-break: break-all;
+  }
+
+  .references-list a {
+    color: #3366cc;
+    text-decoration: none;
+  }
+
+  .references-list a:hover {
+    text-decoration: underline;
   }
 </style>
