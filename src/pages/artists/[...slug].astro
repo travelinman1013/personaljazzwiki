@@ -5,14 +5,18 @@ import { marked } from 'marked';
 
 export async function getStaticPaths() {
   const artists = await getCollection('artists');
+  // Build Set of all artist slugs for red link detection
+  const artistSlugs = artists.map(a => a.id);
 
   return artists.map((artist) => ({
     params: { slug: artist.id },
-    props: { artist },
+    props: { artist, artistSlugs },
   }));
 }
 
-const { artist } = Astro.props;
+const { artist, artistSlugs } = Astro.props;
+// Convert to Set for O(1) lookup
+const artistSlugSet = new Set(artistSlugs as string[]);
 const { data } = artist;
 
 // Get the raw markdown body
@@ -29,12 +33,18 @@ if (rawBody) {
   processedBody = processedBody.replace(/^#\s+.+\n/m, '');
 
   // Convert wiki links [[artist_name|Display Name]] to HTML links
+  // Non-existent artists render as plain text (will become links when added)
   processedBody = processedBody.replace(
     /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g,
     (match, pageName, displayName) => {
       const slug = pageName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
       const text = displayName || pageName;
-      return `<a href="/artists/${slug}" class="wiki-link">${text}</a>`;
+      if (artistSlugSet.has(slug)) {
+        return `<a href="/artists/${slug}" class="wiki-link">${text}</a>`;
+      } else {
+        // Plain text for non-existent artists - will auto-link when artist is added
+        return `<span class="wiki-link-missing">${text}</span>`;
+      }
     }
   );
 
@@ -109,14 +119,20 @@ const title = (data.title as string) || artist.id.replace(/-/g, ' ').replace(/\b
 </WikiArticle>
 
 <style is:global>
-  /* Style wiki links */
+  /* Style wiki links - use CSS variables for theming */
   .wiki-link {
-    color: #3366cc;
+    color: var(--color-link);
     text-decoration: none;
   }
 
   .wiki-link:hover {
     text-decoration: underline;
+    color: var(--color-link-hover);
+  }
+
+  /* Non-existent artists - plain text, slightly muted */
+  .wiki-link-missing {
+    color: var(--color-text);
   }
 
   /* Hide broken images (portraits that don't exist) */
@@ -137,11 +153,12 @@ const title = (data.title as string) || artist.id.replace(/-/g, ' ').replace(/\b
   }
 
   .references-list a {
-    color: #3366cc;
+    color: var(--color-link);
     text-decoration: none;
   }
 
   .references-list a:hover {
     text-decoration: underline;
+    color: var(--color-link-hover);
   }
 </style>

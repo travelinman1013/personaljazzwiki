@@ -303,6 +303,45 @@ const toSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').
     word-break: break-word;
   }
 
+  /* Dark mode: keep infobox text dark since background stays light */
+  :global([data-mode="dark"]) .infobox {
+    color: #202122;
+  }
+
+  :global([data-mode="dark"]) .infobox th {
+    color: #202122;
+  }
+
+  :global([data-mode="dark"]) .infobox td {
+    color: #202122;
+  }
+
+  :global([data-mode="dark"]) .infobox .text-wiki-text-muted {
+    color: #54595d;
+  }
+
+  /* Dark mode: Keep header row backgrounds light */
+  :global([data-mode="dark"]) .infobox .bg-wiki-bg-nav {
+    background-color: #eaecf0;
+  }
+
+  /* Dark mode: Spotify section stays with light green background */
+  :global([data-mode="dark"]) .infobox .bg-green-50 {
+    background-color: #dcfce7;
+  }
+
+  :global([data-mode="dark"]) .infobox .text-green-800 {
+    color: #166534;
+  }
+
+  :global([data-mode="dark"]) .infobox .text-green-600 {
+    color: #16a34a;
+  }
+
+  :global([data-mode="dark"]) .infobox .bg-gray-200 {
+    background-color: #e5e7eb;
+  }
+
   /* Responsive: stack on mobile */
   @media (max-width: 640px) {
     .infobox {
