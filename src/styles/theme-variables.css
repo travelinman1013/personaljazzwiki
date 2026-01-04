@@ -1,0 +1,211 @@
+/* Theme Variables for PersonalJazzWiki */
+/* All colors defined as CSS custom properties for runtime theming */
+
+:root {
+  /* Background colors */
+  --color-bg: #f8f9fa;
+  --color-bg-content: #ffffff;
+  --color-bg-infobox: #f8f9fa;
+  --color-bg-nav: #eaecf0;
+
+  /* Border colors */
+  --color-border: #a2a9b1;
+  --color-border-light: #c8ccd1;
+  --color-border-infobox: #a2a9b1;
+
+  /* Text colors */
+  --color-text: #202122;
+  --color-text-secondary: #54595d;
+  --color-text-muted: #72777d;
+
+  /* Link colors (theme accent) */
+  --color-link: #3366cc;
+  --color-link-hover: #447ff5;
+  --color-link-visited: #795cb2;
+  --color-link-red: #d33;
+
+  /* Accent colors */
+  --color-accent: #3366cc;
+  --color-accent-light: #eaf3ff;
+
+  /* Tag colors */
+  --color-tag-bg: #eaecf0;
+  --color-tag-border: #c8ccd1;
+  --color-tag-text: #54595d;
+
+  /* Layout variables */
+  --font-size-base: 16px;
+  --article-max-width: 48rem;
+  --spacing-multiplier: 1;
+}
+
+/* ============================================
+   DARK MODE
+   ============================================ */
+[data-mode="dark"] {
+  --color-bg: #1a1a1b;
+  --color-bg-content: #222223;
+  --color-bg-infobox: #2a2a2b;
+  --color-bg-nav: #333334;
+
+  --color-border: #4a4a4b;
+  --color-border-light: #3a3a3b;
+  --color-border-infobox: #4a4a4b;
+
+  --color-text: #e0e0e1;
+  --color-text-secondary: #b0b0b1;
+  --color-text-muted: #909091;
+
+  --color-link-visited: #b8a0d0;
+  --color-link-red: #ff6b6b;
+
+  --color-tag-bg: #333334;
+  --color-tag-border: #4a4a4b;
+  --color-tag-text: #b0b0b1;
+
+  /* Accent light gets darker in dark mode */
+  --color-accent-light: rgba(51, 102, 204, 0.15);
+}
+
+/* ============================================
+   THEME COLOR VARIANTS
+   Each theme overrides accent/link colors
+   ============================================ */
+
+/* Wikipedia Blue (default) */
+[data-theme="wikipedia-blue"] {
+  --color-link: #3366cc;
+  --color-link-hover: #447ff5;
+  --color-accent: #3366cc;
+  --color-accent-light: #eaf3ff;
+}
+[data-mode="dark"][data-theme="wikipedia-blue"] {
+  --color-link: #6699ff;
+  --color-link-hover: #88b3ff;
+  --color-accent: #6699ff;
+  --color-accent-light: rgba(102, 153, 255, 0.15);
+}
+
+/* Forest Green */
+[data-theme="forest-green"] {
+  --color-link: #2d7d46;
+  --color-link-hover: #3a9d5a;
+  --color-accent: #2d7d46;
+  --color-accent-light: #e8f5ec;
+}
+[data-mode="dark"][data-theme="forest-green"] {
+  --color-link: #5cb85c;
+  --color-link-hover: #7fcc7f;
+  --color-accent: #5cb85c;
+  --color-accent-light: rgba(92, 184, 92, 0.15);
+}
+
+/* Royal Purple */
+[data-theme="royal-purple"] {
+  --color-link: #6b4c9a;
+  --color-link-hover: #8563b8;
+  --color-accent: #6b4c9a;
+  --color-accent-light: #f0ebf7;
+}
+[data-mode="dark"][data-theme="royal-purple"] {
+  --color-link: #9b7bc9;
+  --color-link-hover: #b59bdb;
+  --color-accent: #9b7bc9;
+  --color-accent-light: rgba(155, 123, 201, 0.15);
+}
+
+/* Sunset Orange */
+[data-theme="sunset-orange"] {
+  --color-link: #d35400;
+  --color-link-hover: #e67e22;
+  --color-accent: #d35400;
+  --color-accent-light: #fdf2e6;
+}
+[data-mode="dark"][data-theme="sunset-orange"] {
+  --color-link: #e67e22;
+  --color-link-hover: #f39c12;
+  --color-accent: #e67e22;
+  --color-accent-light: rgba(230, 126, 34, 0.15);
+}
+
+/* Ocean Teal */
+[data-theme="ocean-teal"] {
+  --color-link: #16a085;
+  --color-link-hover: #1abc9c;
+  --color-accent: #16a085;
+  --color-accent-light: #e6f7f4;
+}
+[data-mode="dark"][data-theme="ocean-teal"] {
+  --color-link: #1abc9c;
+  --color-link-hover: #48d1b5;
+  --color-accent: #1abc9c;
+  --color-accent-light: rgba(26, 188, 156, 0.15);
+}
+
+/* Slate Gray */
+[data-theme="slate-gray"] {
+  --color-link: #5d6d7e;
+  --color-link-hover: #778899;
+  --color-accent: #5d6d7e;
+  --color-accent-light: #eef1f3;
+}
+[data-mode="dark"][data-theme="slate-gray"] {
+  --color-link: #8fa0b0;
+  --color-link-hover: #a8b8c8;
+  --color-accent: #8fa0b0;
+  --color-accent-light: rgba(143, 160, 176, 0.15);
+}
+
+/* Warm Brown */
+[data-theme="warm-brown"] {
+  --color-link: #8b5a2b;
+  --color-link-hover: #a0673a;
+  --color-accent: #8b5a2b;
+  --color-accent-light: #f5efe8;
+}
+[data-mode="dark"][data-theme="warm-brown"] {
+  --color-link: #c49a6c;
+  --color-link-hover: #d4b08c;
+  --color-accent: #c49a6c;
+  --color-accent-light: rgba(196, 154, 108, 0.15);
+}
+
+/* Crimson */
+[data-theme="crimson"] {
+  --color-link: #c0392b;
+  --color-link-hover: #e74c3c;
+  --color-accent: #c0392b;
+  --color-accent-light: #fbeae8;
+}
+[data-mode="dark"][data-theme="crimson"] {
+  --color-link: #e74c3c;
+  --color-link-hover: #f06e5f;
+  --color-accent: #e74c3c;
+  --color-accent-light: rgba(231, 76, 60, 0.15);
+}
+
+/* ============================================
+   COMPACT MODE
+   ============================================ */
+[data-compact="true"] {
+  --spacing-multiplier: 0.75;
+}
+
+/* ============================================
+   TOC VISIBILITY
+   ============================================ */
+[data-show-toc="false"] .toc-sidebar {
+  display: none !important;
+}
+
+[data-show-toc="false"] .toc-mobile-container {
+  display: none !important;
+}
+
+/* ============================================
+   ARTICLE WIDTH
+   Applied via --article-max-width variable
+   ============================================ */
+.article-body {
+  max-width: var(--article-max-width);
+}

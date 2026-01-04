@@ -1,4 +1,6 @@
 ---
+import '../styles/theme-variables.css';
+
 interface Props {
   title: string;
   description?: string;
@@ -8,7 +10,7 @@ const { title, description = 'A personal wiki for music artists and their connec
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="wikipedia-blue" data-mode="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -16,6 +18,52 @@ const { title, description = 'A personal wiki for music artists and their connec
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
     <title>{title} - PersonalJazzWiki</title>
+
+    <!-- Inline settings initialization (prevents FOUC) -->
+    <script is:inline>
+      (function() {
+        var STORAGE_KEY = 'wiki-settings';
+        var defaults = {
+          theme: 'wikipedia-blue',
+          mode: 'system',
+          fontSize: 'medium',
+          articleWidth: 'medium',
+          showToc: true,
+          compactMode: false,
+          externalLinksNewTab: true
+        };
+
+        var settings = defaults;
+        try {
+          var stored = localStorage.getItem(STORAGE_KEY);
+          if (stored) settings = Object.assign({}, defaults, JSON.parse(stored));
+        } catch(e) {}
+
+        var html = document.documentElement;
+        html.setAttribute('data-theme', settings.theme);
+
+        // Determine effective mode
+        var effectiveMode = settings.mode;
+        if (settings.mode === 'system') {
+          effectiveMode = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        html.setAttribute('data-mode', effectiveMode);
+
+        // Apply other settings as data attributes
+        html.setAttribute('data-compact', settings.compactMode);
+        html.setAttribute('data-show-toc', settings.showToc);
+        html.setAttribute('data-external-new-tab', settings.externalLinksNewTab);
+
+        var fontSizes = { small: '14px', medium: '16px', large: '18px' };
+        html.style.fontSize = fontSizes[settings.fontSize] || '16px';
+
+        var widths = { narrow: '42rem', medium: '48rem', wide: '60rem' };
+        html.style.setProperty('--article-max-width', widths[settings.articleWidth] || '48rem');
+
+        var spacing = settings.compactMode ? '0.75' : '1';
+        html.style.setProperty('--spacing-multiplier', spacing);
+      })();
+    </script>
   </head>
   <body class="bg-wiki-bg min-h-screen">
     <!-- Header -->
@@ -35,6 +83,12 @@ const { title, description = 'A personal wiki for music artists and their connec
             <a href="/instruments" class="text-wiki-link hover:text-wiki-link-hover text-sm">Instruments</a>
             <a href="/random" class="text-wiki-link hover:text-wiki-link-hover text-sm">Random</a>
             <a href="/search" class="text-wiki-link hover:text-wiki-link-hover text-sm">Search</a>
+            <a href="/settings" class="text-wiki-link hover:text-wiki-link-hover" title="Settings" aria-label="Settings">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </a>
           </nav>
         </div>
       </div>
@@ -65,7 +119,7 @@ const { title, description = 'A personal wiki for music artists and their connec
     <style is:global>
       /* Wiki link styling */
       .wiki-link {
-        color: #3366cc;
+        color: var(--color-link);
         text-decoration: none;
       }
       .wiki-link:hover {
@@ -74,7 +128,7 @@ const { title, description = 'A personal wiki for music artists and their connec
 
       /* Red links for non-existent pages */
       .wiki-link-new {
-        color: #d33;
+        color: var(--color-link-red);
         text-decoration: none;
       }
       .wiki-link-new:hover {
@@ -86,75 +140,119 @@ const { title, description = 'A personal wiki for music artists and their connec
         font-family: Georgia, 'Times New Roman', serif;
         font-size: 1.8rem;
         font-weight: 400;
-        border-bottom: 1px solid #a2a9b1;
+        border-bottom: 1px solid var(--color-border);
         padding-bottom: 0.25rem;
-        margin-bottom: 1rem;
+        margin-bottom: calc(1rem * var(--spacing-multiplier, 1));
+        color: var(--color-text);
       }
 
       .article-content h2 {
         font-family: Georgia, 'Times New Roman', serif;
         font-size: 1.5rem;
         font-weight: 400;
-        border-bottom: 1px solid #a2a9b1;
+        border-bottom: 1px solid var(--color-border);
         padding-bottom: 0.25rem;
-        margin-top: 1.5rem;
-        margin-bottom: 0.75rem;
+        margin-top: calc(1.5rem * var(--spacing-multiplier, 1));
+        margin-bottom: calc(0.75rem * var(--spacing-multiplier, 1));
+        color: var(--color-text);
       }
 
       .article-content h3 {
         font-family: Georgia, 'Times New Roman', serif;
         font-size: 1.2rem;
         font-weight: 600;
-        margin-top: 1.25rem;
-        margin-bottom: 0.5rem;
+        margin-top: calc(1.25rem * var(--spacing-multiplier, 1));
+        margin-bottom: calc(0.5rem * var(--spacing-multiplier, 1));
+        color: var(--color-text);
       }
 
       .article-content p {
-        margin-bottom: 1rem;
+        margin-bottom: calc(1rem * var(--spacing-multiplier, 1));
         line-height: 1.65;
+        color: var(--color-text);
       }
 
       .article-content ul,
       .article-content ol {
-        margin-bottom: 1rem;
+        margin-bottom: calc(1rem * var(--spacing-multiplier, 1));
         padding-left: 1.5rem;
+        color: var(--color-text);
       }
 
       .article-content li {
-        margin-bottom: 0.25rem;
+        margin-bottom: calc(0.25rem * var(--spacing-multiplier, 1));
       }
 
       .article-content a {
-        color: #3366cc;
+        color: var(--color-link);
         text-decoration: none;
       }
 
       .article-content a:hover {
         text-decoration: underline;
+        color: var(--color-link-hover);
       }
 
       /* Table styling */
       .article-content table {
         border-collapse: collapse;
-        margin: 1rem 0;
+        margin: calc(1rem * var(--spacing-multiplier, 1)) 0;
         width: 100%;
       }
 
       .article-content th,
       .article-content td {
-        border: 1px solid #a2a9b1;
+        border: 1px solid var(--color-border);
         padding: 0.5rem;
         text-align: left;
+        color: var(--color-text);
       }
 
       .article-content th {
-        background-color: #eaecf0;
+        background-color: var(--color-bg-nav);
         font-weight: 600;
       }
 
       .article-content tr:nth-child(even) {
-        background-color: #f8f9fa;
+        background-color: var(--color-bg);
       }
     </style>
+
+    <!-- External links behavior script -->
+    <script is:inline>
+      document.addEventListener('DOMContentLoaded', function() {
+        function updateExternalLinks() {
+          var openInNewTab = document.documentElement.getAttribute('data-external-new-tab') === 'true';
+          document.querySelectorAll('a[href^="http"]').forEach(function(link) {
+            if (link.hostname === window.location.hostname) return;
+            if (openInNewTab) {
+              link.setAttribute('target', '_blank');
+              link.setAttribute('rel', 'noopener noreferrer');
+            } else {
+              link.removeAttribute('target');
+              link.removeAttribute('rel');
+            }
+          });
+        }
+
+        updateExternalLinks();
+
+        // Re-run when settings change
+        var observer = new MutationObserver(updateExternalLinks);
+        observer.observe(document.documentElement, {
+          attributes: true,
+          attributeFilter: ['data-external-new-tab']
+        });
+
+        // Listen for system color scheme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+          var stored = localStorage.getItem('wiki-settings');
+          var settings = stored ? JSON.parse(stored) : {};
+          if (settings.mode === 'system') {
+            document.documentElement.setAttribute('data-mode', e.matches ? 'dark' : 'light');
+          }
+        });
+      });
+    </script>
   </body>
 </html>

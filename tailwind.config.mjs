@@ -4,39 +4,39 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Wikipedia-inspired color palette
+        // Wikipedia-inspired color palette using CSS variables for theming
         wiki: {
           // Background colors
-          bg: '#f8f9fa',
-          'bg-content': '#ffffff',
-          'bg-infobox': '#f8f9fa',
-          'bg-nav': '#eaecf0',
+          bg: 'var(--color-bg)',
+          'bg-content': 'var(--color-bg-content)',
+          'bg-infobox': 'var(--color-bg-infobox)',
+          'bg-nav': 'var(--color-bg-nav)',
 
           // Border colors
-          border: '#a2a9b1',
-          'border-light': '#c8ccd1',
-          'border-infobox': '#a2a9b1',
+          border: 'var(--color-border)',
+          'border-light': 'var(--color-border-light)',
+          'border-infobox': 'var(--color-border-infobox)',
 
           // Text colors
-          text: '#202122',
-          'text-secondary': '#54595d',
-          'text-muted': '#72777d',
+          text: 'var(--color-text)',
+          'text-secondary': 'var(--color-text-secondary)',
+          'text-muted': 'var(--color-text-muted)',
 
-          // Link colors (Wikipedia blue)
-          link: '#3366cc',
-          'link-hover': '#447ff5',
-          'link-visited': '#795cb2',
-          'link-red': '#d33', // for non-existent articles
+          // Link colors (theme accent)
+          link: 'var(--color-link)',
+          'link-hover': 'var(--color-link-hover)',
+          'link-visited': 'var(--color-link-visited)',
+          'link-red': 'var(--color-link-red)',
 
           // Accent colors
-          accent: '#3366cc',
-          'accent-light': '#eaf3ff',
+          accent: 'var(--color-accent)',
+          'accent-light': 'var(--color-accent-light)',
 
           // Genre/tag colors
           tag: {
-            bg: '#eaecf0',
-            border: '#c8ccd1',
-            text: '#54595d',
+            bg: 'var(--color-tag-bg)',
+            border: 'var(--color-tag-border)',
+            text: 'var(--color-tag-text)',
           },
         },
       },
@@ -62,9 +62,9 @@ export default {
         DEFAULT: {
           css: {
             maxWidth: 'none',
-            color: '#202122',
+            color: 'var(--color-text)',
             a: {
-              color: '#3366cc',
+              color: 'var(--color-link)',
               textDecoration: 'none',
               '&:hover': {
                 textDecoration: 'underline',
@@ -73,7 +73,7 @@ export default {
             'h1, h2, h3, h4': {
               fontFamily: 'Georgia, Times, serif',
               fontWeight: '400',
-              borderBottom: '1px solid #a2a9b1',
+              borderBottom: '1px solid var(--color-border)',
               paddingBottom: '0.25em',
             },
             h1: {

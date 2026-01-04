@@ -1,0 +1,473 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const themes = [
+  { id: 'wikipedia-blue', name: 'Wikipedia Blue', color: '#3366cc' },
+  { id: 'forest-green', name: 'Forest Green', color: '#2d7d46' },
+  { id: 'royal-purple', name: 'Royal Purple', color: '#6b4c9a' },
+  { id: 'sunset-orange', name: 'Sunset Orange', color: '#d35400' },
+  { id: 'ocean-teal', name: 'Ocean Teal', color: '#16a085' },
+  { id: 'slate-gray', name: 'Slate Gray', color: '#5d6d7e' },
+  { id: 'warm-brown', name: 'Warm Brown', color: '#8b5a2b' },
+  { id: 'crimson', name: 'Crimson', color: '#c0392b' },
+];
+---
+
+<Layout title="Settings" description="Customize your PersonalJazzWiki experience">
+  <article class="article-content">
+    <h1>Settings</h1>
+    <p class="text-wiki-text-secondary mb-6">
+      Customize your reading experience. All settings are saved locally in your browser.
+    </p>
+
+    <div class="space-y-8 max-w-2xl">
+      <!-- Theme Color -->
+      <section class="setting-group">
+        <h2 class="setting-header">Theme Color</h2>
+        <p class="setting-description">Choose your preferred accent color for links and highlights.</p>
+        <div class="grid grid-cols-4 gap-3" id="theme-selector">
+          {themes.map(theme => (
+            <button
+              data-theme-option={theme.id}
+              class="theme-swatch"
+            >
+              <span
+                class="swatch-color"
+                style={`background-color: ${theme.color}`}
+              ></span>
+              <span class="swatch-label">{theme.name}</span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <!-- Light/Dark Mode -->
+      <section class="setting-group">
+        <h2 class="setting-header">Color Mode</h2>
+        <p class="setting-description">Switch between light and dark themes.</p>
+        <div class="button-group" id="mode-selector">
+          <button data-mode-option="light" class="option-btn">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            Light
+          </button>
+          <button data-mode-option="dark" class="option-btn">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+            Dark
+          </button>
+          <button data-mode-option="system" class="option-btn">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            System
+          </button>
+        </div>
+      </section>
+
+      <!-- Font Size -->
+      <section class="setting-group">
+        <h2 class="setting-header">Font Size</h2>
+        <p class="setting-description">Adjust the base text size for readability.</p>
+        <div class="button-group" id="font-size-selector">
+          <button data-fontsize-option="small" class="option-btn text-sm">
+            Small
+          </button>
+          <button data-fontsize-option="medium" class="option-btn">
+            Medium
+          </button>
+          <button data-fontsize-option="large" class="option-btn text-lg">
+            Large
+          </button>
+        </div>
+      </section>
+
+      <!-- Article Width -->
+      <section class="setting-group">
+        <h2 class="setting-header">Article Width</h2>
+        <p class="setting-description">Control the maximum width of article content.</p>
+        <div class="button-group" id="width-selector">
+          <button data-width-option="narrow" class="option-btn">
+            Narrow
+          </button>
+          <button data-width-option="medium" class="option-btn">
+            Medium
+          </button>
+          <button data-width-option="wide" class="option-btn">
+            Wide
+          </button>
+        </div>
+      </section>
+
+      <!-- Toggle Settings -->
+      <section class="setting-group">
+        <h2 class="setting-header">Display Options</h2>
+
+        <div class="space-y-4">
+          <!-- Show TOC -->
+          <label class="toggle-setting">
+            <div>
+              <span class="toggle-label">Show Table of Contents</span>
+              <p class="toggle-description">Display the TOC sidebar on article pages</p>
+            </div>
+            <input type="checkbox" id="setting-show-toc" class="toggle-checkbox" />
+          </label>
+
+          <!-- Compact Mode -->
+          <label class="toggle-setting">
+            <div>
+              <span class="toggle-label">Compact Mode</span>
+              <p class="toggle-description">Reduce spacing for a denser display</p>
+            </div>
+            <input type="checkbox" id="setting-compact" class="toggle-checkbox" />
+          </label>
+
+          <!-- External Links -->
+          <label class="toggle-setting">
+            <div>
+              <span class="toggle-label">Open External Links in New Tab</span>
+              <p class="toggle-description">Wikipedia, Spotify, and other external links</p>
+            </div>
+            <input type="checkbox" id="setting-external-new-tab" class="toggle-checkbox" />
+          </label>
+        </div>
+      </section>
+
+      <!-- Reset Button -->
+      <section class="pt-4 border-t border-wiki-border">
+        <button
+          id="reset-settings"
+          class="reset-btn"
+        >
+          Reset to Defaults
+        </button>
+      </section>
+    </div>
+  </article>
+</Layout>
+
+<style>
+  .setting-group {
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--color-border-light);
+  }
+
+  .setting-group:last-of-type {
+    border-bottom: none;
+  }
+
+  .setting-header {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--color-text);
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .setting-description {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    margin-bottom: 1rem;
+  }
+
+  /* Theme color swatches */
+  .theme-swatch {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    border: 2px solid var(--color-border);
+    background: var(--color-bg-content);
+    cursor: pointer;
+    transition: border-color 0.15s, background-color 0.15s;
+  }
+
+  .theme-swatch:hover {
+    border-color: var(--color-link);
+  }
+
+  .theme-swatch[data-selected="true"] {
+    border-color: var(--color-accent);
+    background-color: var(--color-accent-light);
+  }
+
+  .swatch-color {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 9999px;
+    border: 1px solid var(--color-border);
+  }
+
+  .swatch-label {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    text-align: center;
+  }
+
+  /* Button group styling */
+  .button-group {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .option-btn {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-content);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: border-color 0.15s, background-color 0.15s;
+  }
+
+  .option-btn:hover {
+    border-color: var(--color-link);
+  }
+
+  .option-btn[data-selected="true"] {
+    border-color: var(--color-accent);
+    background-color: var(--color-accent-light);
+    color: var(--color-accent);
+  }
+
+  /* Toggle settings */
+  .toggle-setting {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem;
+    background: var(--color-bg);
+    border-radius: 0.375rem;
+    border: 1px solid var(--color-border-light);
+    cursor: pointer;
+    transition: background-color 0.15s;
+  }
+
+  .toggle-setting:hover {
+    background: var(--color-bg-nav);
+  }
+
+  .toggle-label {
+    font-weight: 500;
+    color: var(--color-text);
+  }
+
+  .toggle-description {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    margin-top: 0.125rem;
+  }
+
+  .toggle-checkbox {
+    width: 1.25rem;
+    height: 1.25rem;
+    accent-color: var(--color-accent);
+    cursor: pointer;
+  }
+
+  /* Reset button */
+  .reset-btn {
+    padding: 0.5rem 1rem;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 0.375rem;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: background-color 0.15s;
+  }
+
+  .reset-btn:hover {
+    background: var(--color-bg-nav);
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 640px) {
+    .theme-swatch {
+      padding: 0.5rem;
+    }
+
+    .swatch-color {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+
+    .swatch-label {
+      font-size: 0.65rem;
+    }
+
+    .button-group {
+      flex-direction: column;
+    }
+
+    .option-btn {
+      justify-content: center;
+    }
+  }
+</style>
+
+<script>
+  const STORAGE_KEY = 'wiki-settings';
+
+  const DEFAULT_SETTINGS = {
+    theme: 'wikipedia-blue',
+    mode: 'system',
+    fontSize: 'medium',
+    articleWidth: 'medium',
+    showToc: true,
+    compactMode: false,
+    externalLinksNewTab: true,
+  };
+
+  function getSettings() {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (!stored) return DEFAULT_SETTINGS;
+      return { ...DEFAULT_SETTINGS, ...JSON.parse(stored) };
+    } catch {
+      return DEFAULT_SETTINGS;
+    }
+  }
+
+  function saveSettings(partial: Partial<typeof DEFAULT_SETTINGS>) {
+    const current = getSettings();
+    const updated = { ...current, ...partial };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    applySettings(updated);
+    updateUI(updated);
+  }
+
+  function applySettings(settings: typeof DEFAULT_SETTINGS) {
+    const html = document.documentElement;
+
+    // Apply theme
+    html.setAttribute('data-theme', settings.theme);
+
+    // Apply color mode
+    if (settings.mode === 'system') {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      html.setAttribute('data-mode', prefersDark ? 'dark' : 'light');
+    } else {
+      html.setAttribute('data-mode', settings.mode);
+    }
+
+    // Apply font size
+    const fontSizes: Record<string, string> = { small: '14px', medium: '16px', large: '18px' };
+    html.style.fontSize = fontSizes[settings.fontSize] || '16px';
+
+    // Apply article width
+    const widths: Record<string, string> = { narrow: '42rem', medium: '48rem', wide: '60rem' };
+    html.style.setProperty('--article-max-width', widths[settings.articleWidth] || '48rem');
+
+    // Apply compact mode
+    html.style.setProperty('--spacing-multiplier', settings.compactMode ? '0.75' : '1');
+    html.setAttribute('data-compact', String(settings.compactMode));
+
+    // Apply TOC visibility
+    html.setAttribute('data-show-toc', String(settings.showToc));
+
+    // Apply external links behavior
+    html.setAttribute('data-external-new-tab', String(settings.externalLinksNewTab));
+  }
+
+  function updateUI(settings: typeof DEFAULT_SETTINGS) {
+    // Update theme buttons
+    document.querySelectorAll('[data-theme-option]').forEach(btn => {
+      const button = btn as HTMLElement;
+      button.dataset.selected = String(button.dataset.themeOption === settings.theme);
+    });
+
+    // Update mode buttons
+    document.querySelectorAll('[data-mode-option]').forEach(btn => {
+      const button = btn as HTMLElement;
+      button.dataset.selected = String(button.dataset.modeOption === settings.mode);
+    });
+
+    // Update font size buttons
+    document.querySelectorAll('[data-fontsize-option]').forEach(btn => {
+      const button = btn as HTMLElement;
+      button.dataset.selected = String(button.dataset.fontsizeOption === settings.fontSize);
+    });
+
+    // Update width buttons
+    document.querySelectorAll('[data-width-option]').forEach(btn => {
+      const button = btn as HTMLElement;
+      button.dataset.selected = String(button.dataset.widthOption === settings.articleWidth);
+    });
+
+    // Update checkboxes
+    const tocCheckbox = document.getElementById('setting-show-toc') as HTMLInputElement;
+    const compactCheckbox = document.getElementById('setting-compact') as HTMLInputElement;
+    const externalCheckbox = document.getElementById('setting-external-new-tab') as HTMLInputElement;
+
+    if (tocCheckbox) tocCheckbox.checked = settings.showToc;
+    if (compactCheckbox) compactCheckbox.checked = settings.compactMode;
+    if (externalCheckbox) externalCheckbox.checked = settings.externalLinksNewTab;
+  }
+
+  // Initialize on page load
+  document.addEventListener('DOMContentLoaded', () => {
+    const settings = getSettings();
+    applySettings(settings);
+    updateUI(settings);
+
+    // Theme selector
+    document.querySelectorAll('[data-theme-option]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const button = btn as HTMLElement;
+        saveSettings({ theme: button.dataset.themeOption as any });
+      });
+    });
+
+    // Mode selector
+    document.querySelectorAll('[data-mode-option]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const button = btn as HTMLElement;
+        saveSettings({ mode: button.dataset.modeOption as any });
+      });
+    });
+
+    // Font size selector
+    document.querySelectorAll('[data-fontsize-option]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const button = btn as HTMLElement;
+        saveSettings({ fontSize: button.dataset.fontsizeOption as any });
+      });
+    });
+
+    // Width selector
+    document.querySelectorAll('[data-width-option]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const button = btn as HTMLElement;
+        saveSettings({ articleWidth: button.dataset.widthOption as any });
+      });
+    });
+
+    // Checkbox toggles
+    document.getElementById('setting-show-toc')?.addEventListener('change', (e) => {
+      saveSettings({ showToc: (e.target as HTMLInputElement).checked });
+    });
+
+    document.getElementById('setting-compact')?.addEventListener('change', (e) => {
+      saveSettings({ compactMode: (e.target as HTMLInputElement).checked });
+    });
+
+    document.getElementById('setting-external-new-tab')?.addEventListener('change', (e) => {
+      saveSettings({ externalLinksNewTab: (e.target as HTMLInputElement).checked });
+    });
+
+    // Reset button
+    document.getElementById('reset-settings')?.addEventListener('click', () => {
+      localStorage.removeItem(STORAGE_KEY);
+      applySettings(DEFAULT_SETTINGS);
+      updateUI(DEFAULT_SETTINGS);
+    });
+  });
+</script>
