@@ -23,11 +23,9 @@ try {
 const artistCount = allArtists.length;
 const artistsWithSpotify = allArtists.filter(a => a.data.spotify_data?.popularity).length;
 
-// Get popular artists (sorted by Spotify popularity)
-const popularArtists = allArtists
-  .filter(a => a.data.spotify_data?.popularity && a.data.spotify_data.popularity > 0)
-  .sort((a, b) => (b.data.spotify_data?.popularity || 0) - (a.data.spotify_data?.popularity || 0))
-  .slice(0, 8);
+// Random selection for Now Playing - 12 cards fills complete rows at all breakpoints (2/3/4 cols)
+const shuffled = [...allArtists].sort(() => Math.random() - 0.5);
+const randomArtists = shuffled.slice(0, 12);
 
 // Get recently updated artists
 const recentArtists = allArtists
@@ -133,7 +131,7 @@ const getArtistType = (artist: any): string | undefined => {
         <span class="section-icon">&#127927;</span>
         <h2 class="section-title">Now Playing</h2>
       </div>
-      <p class="section-subtitle">Most popular artists by Spotify ranking</p>
+      <p class="section-subtitle">A random selection from the collection</p>
       <a href="/artists" class="section-link">
         View all artists
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -143,7 +141,7 @@ const getArtistType = (artist: any): string | undefined => {
     </header>
 
     <div class="artists-grid">
-      {popularArtists.map((artist) => (
+      {randomArtists.map((artist) => (
         <ArtistCard
           name={artist.data.title || artist.id}
           slug={artist.id}
