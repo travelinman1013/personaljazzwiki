@@ -34,6 +34,11 @@ sortedLogs.forEach(log => {
   logsByMonth.get(month)!.push(log);
 });
 
+// Sort dates descending within each month
+logsByMonth.forEach((logs) => {
+  logs.sort((a, b) => b.id.localeCompare(a.id));
+});
+
 // Format month for display
 const formatMonth = (yearMonth: string) => {
   const [year, month] = yearMonth.split('-');
