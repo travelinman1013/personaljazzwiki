@@ -41,3 +41,4 @@ public/pagefind/
 # Temporary files
 *.tmp
 *.temp
+apikeydeployment.txt
