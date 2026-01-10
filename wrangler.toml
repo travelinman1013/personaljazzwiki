@@ -1,0 +1,22 @@
+name = "jazzapedia"
+compatibility_date = "2025-01-10"
+compatibility_flags = ["nodejs_compat"]
+
+# Point to the generated worker script (REQUIRED for wrangler deploy)
+main = "dist/_worker.js"
+
+# D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "jazzapedia"
+database_id = "3125aa66-6145-43d5-a86d-bd557da61aed"
+
+# Environment variables
+[vars]
+CACHE_TTL = "3600"
+R2_PUBLIC_URL = "https://media.jazzapedia.com"
+# Dev fallback: https://pub-62e25125d5ba433e8e6cf38835c88ddd.r2.dev
+
+# Serve static files (CSS, JS, images) directly from the Edge
+[assets]
+directory = "dist"

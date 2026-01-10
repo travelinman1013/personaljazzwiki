@@ -1,153 +1,313 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import ArtistCard from '../components/jazz/ArtistCard.astro';
+
+// Get search query from URL
+const query = Astro.url.searchParams.get('q') || '';
+const trimmedQuery = query.trim();
+
+// Access D1 and R2 from runtime env
+const db = Astro.locals.runtime?.env?.DB;
+const R2_URL = Astro.locals.runtime?.env?.R2_PUBLIC_URL || 'https://media.jazzapedia.com';
+
+interface SearchResult {
+  slug: string;
+  title: string;
+  artist_type: string | null;
+  genres: string | null;
+  image_filename: string | null;
+  bio_snippet: string;
+}
+
+let results: SearchResult[] = [];
+let searchTime = 0;
+let errorMessage = '';
+
+// Only search if query is at least 2 characters
+if (db && trimmedQuery.length >= 2) {
+  try {
+    const startTime = Date.now();
+
+    // FTS5 search with BM25 ranking
+    const stmt = db.prepare(`
+      SELECT
+        a.slug,
+        a.title,
+        a.artist_type,
+        a.genres,
+        a.image_filename,
+        snippet(search_fts, 1, '<mark>', '</mark>', '...', 32) as bio_snippet
+      FROM search_fts fts
+      JOIN artists a ON fts.rowid = a.id
+      WHERE search_fts MATCH ?
+      ORDER BY bm25(search_fts, 10.0, 5.0, 1.0, 1.0)
+      LIMIT 50
+    `);
+
+    const dbResults = await stmt.bind(trimmedQuery).all();
+    results = dbResults.results as SearchResult[];
+
+    searchTime = Date.now() - startTime;
+  } catch (error) {
+    console.error('Search error:', error);
+    errorMessage = 'An error occurred while searching. Please try again.';
+  }
+}
+
+// Set cache headers for search results
+if (trimmedQuery.length >= 2) {
+  Astro.response.headers.set('Cache-Control', 'public, max-age=300, s-maxage=600');
+}
+
+// Parse genres from JSON string
+function parseGenres(genresJson: string | null): string[] {
+  if (!genresJson) return [];
+  try {
+    return JSON.parse(genresJson);
+  } catch {
+    return [];
+  }
+}
 ---
 
-<Layout title="Search" description="Search Jazzapedia for artists, genres, and instruments">
+<Layout
+  title={trimmedQuery ? `Search: ${trimmedQuery}` : 'Search'}
+  description="Search Jazzapedia for artists, genres, and instruments"
+>
   <article class="article-content">
     <h1>Search</h1>
 
-    <p class="text-wiki-text-muted mb-4">
-      Search through 2,500+ musician profiles. Try searching for artist names, genres (jazz, bebop, cool jazz),
-      instruments (saxophone, piano, trumpet), or time periods.
-    </p>
+    <!-- Search Form -->
+    <form method="get" action="/search" class="search-form">
+      <div class="search-input-wrapper">
+        <input
+          type="search"
+          name="q"
+          value={query}
+          placeholder="Search artists, genres, instruments..."
+          class="search-input"
+          autofocus
+          autocomplete="off"
+        />
+        <button type="submit" class="search-button" aria-label="Search">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </button>
+      </div>
+    </form>
 
-    <!-- Pagefind Search UI Container -->
-    <div id="search" class="mt-6"></div>
+    <!-- Search Results -->
+    {trimmedQuery.length > 0 && (
+      <div class="search-results-section">
+        {trimmedQuery.length < 2 ? (
+          <p class="text-wiki-text-muted mt-4">
+            Please enter at least 2 characters to search.
+          </p>
+        ) : errorMessage ? (
+          <p class="text-red-600 mt-4">{errorMessage}</p>
+        ) : results.length > 0 ? (
+          <>
+            <div class="search-meta">
+              <p class="text-wiki-text-muted">
+                Found <strong>{results.length}</strong> {results.length === 1 ? 'artist' : 'artists'}
+                {searchTime > 0 && ` in ${searchTime}ms`}
+              </p>
+            </div>
+
+            <div class="results-grid">
+              {results.map(result => (
+                <ArtistCard
+                  name={result.title}
+                  slug={result.slug}
+                  portrait={result.image_filename ? `${R2_URL}/portraits/${result.image_filename}` : undefined}
+                  genres={parseGenres(result.genres)}
+                  artistType={result.artist_type || undefined}
+                />
+              ))}
+            </div>
+          </>
+        ) : (
+          <div class="no-results">
+            <p class="text-wiki-text-muted">
+              No artists found for "<strong>{trimmedQuery}</strong>"
+            </p>
+            <p class="text-wiki-text-muted text-sm mt-2">
+              Try searching for:
+            </p>
+            <ul class="suggestions-list">
+              <li>Artist names (e.g., "Miles Davis", "Coltrane")</li>
+              <li>Genres (e.g., "bebop", "cool jazz", "swing")</li>
+              <li>Instruments (e.g., "saxophone", "piano", "trumpet")</li>
+              <li>Time periods or styles</li>
+            </ul>
+          </div>
+        )}
+      </div>
+    )}
+
+    {!trimmedQuery && (
+      <div class="search-help">
+        <p class="text-wiki-text-muted mb-4">
+          Search through 3,400+ musician profiles. Try searching for artist names, genres (jazz, bebop, cool jazz),
+          instruments (saxophone, piano, trumpet), or time periods.
+        </p>
+
+        <div class="search-examples">
+          <h3 class="text-wiki-text-heading font-semibold mb-2">Example searches:</h3>
+          <ul class="examples-list">
+            <li><a href="/search?q=bebop" class="text-wiki-link hover:text-wiki-link-hover">bebop</a></li>
+            <li><a href="/search?q=saxophone" class="text-wiki-link hover:text-wiki-link-hover">saxophone</a></li>
+            <li><a href="/search?q=New+Orleans" class="text-wiki-link hover:text-wiki-link-hover">New Orleans</a></li>
+            <li><a href="/search?q=1950s" class="text-wiki-link hover:text-wiki-link-hover">1950s</a></li>
+          </ul>
+        </div>
+      </div>
+    )}
   </article>
 </Layout>
 
-<!-- Pagefind UI Styles -->
-<link href="/pagefind/pagefind-ui.css" rel="stylesheet" />
-
-<!-- Custom Pagefind Styles to match wiki theme -->
-<style is:global>
-  /* Pagefind search input styling */
-  .pagefind-ui__search-input {
-    border: 1px solid var(--color-border) !important;
-    border-radius: 4px !important;
-    font-size: 1rem !important;
-    padding: 0.75rem 1rem !important;
-    width: 100% !important;
-    background-color: var(--color-bg-content) !important;
-    color: var(--color-text) !important;
+<style>
+  .search-form {
+    margin-bottom: 2rem;
   }
 
-  .pagefind-ui__search-input:focus {
-    border-color: var(--color-link) !important;
-    outline: none !important;
-    box-shadow: 0 0 0 2px var(--color-accent-light) !important;
+  .search-input-wrapper {
+    display: flex;
+    gap: 0.5rem;
+    max-width: 600px;
   }
 
-  /* Search button styling */
-  .pagefind-ui__search-clear {
-    color: var(--color-text-muted) !important;
+  .search-input {
+    flex: 1;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    font-size: 1rem;
+    padding: 0.75rem 1rem;
+    background-color: var(--color-bg-content);
+    color: var(--color-text);
+    transition: border-color 0.2s, box-shadow 0.2s;
   }
 
-  /* Results styling */
-  .pagefind-ui__result {
-    border-bottom: 1px solid var(--color-border-light) !important;
-    padding: 1rem 0 !important;
+  .search-input:focus {
+    border-color: var(--color-link);
+    outline: none;
+    box-shadow: 0 0 0 2px var(--color-accent-light);
   }
 
-  .pagefind-ui__result-title {
-    font-family: Georgia, 'Times New Roman', serif !important;
-    font-size: 1.25rem !important;
-    font-weight: 400 !important;
-    color: var(--color-text) !important;
+  .search-button {
+    padding: 0.75rem 1.25rem;
+    background-color: var(--color-link);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
-  .pagefind-ui__result-link {
-    color: var(--color-link) !important;
-    text-decoration: none !important;
+  .search-button:hover {
+    background-color: var(--color-link-hover);
   }
 
-  .pagefind-ui__result-link:hover {
-    text-decoration: underline !important;
-    color: var(--color-link-hover) !important;
+  .search-button:active {
+    transform: translateY(1px);
   }
 
-  .pagefind-ui__result-excerpt {
-    color: var(--color-text-secondary) !important;
-    font-size: 0.9rem !important;
-    line-height: 1.5 !important;
-    margin-top: 0.5rem !important;
+  .search-results-section {
+    margin-top: 1.5rem;
   }
 
-  /* Result metadata */
-  .pagefind-ui__result-nested {
-    padding-left: 1rem !important;
-    border-left: 2px solid var(--color-border-light) !important;
-    margin-top: 0.5rem !important;
+  .search-meta {
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--color-border-light);
   }
 
-  /* Message styling */
-  .pagefind-ui__message {
-    color: var(--color-text-muted) !important;
-    font-style: italic !important;
-    padding: 1rem 0 !important;
+  .results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1.25rem;
   }
 
-  /* Highlight styling */
-  .pagefind-ui__result-excerpt mark {
-    background-color: var(--color-accent-light) !important;
-    color: inherit !important;
-    padding: 0.1rem 0.2rem !important;
-    border-radius: 2px !important;
-  }
-
-  /* Filter button styling */
-  .pagefind-ui__filter-panel {
-    border: 1px solid var(--color-border-light) !important;
-    border-radius: 4px !important;
-    padding: 1rem !important;
-    margin-bottom: 1rem !important;
-    background-color: var(--color-bg) !important;
-  }
-
-  .pagefind-ui__filter-name {
-    font-weight: 600 !important;
-    color: var(--color-text) !important;
-  }
-
-  /* Loading indicator */
-  .pagefind-ui__loading {
-    color: var(--color-text-muted) !important;
-  }
-</style>
-
-<!-- Pagefind UI Script - loaded at runtime after build -->
-<script is:inline>
-  // Load Pagefind UI when the page is ready
-  // Pagefind is generated after build, so we need to load it dynamically at runtime
-  async function loadPagefind() {
-    try {
-      // Dynamic path prevents Vite static analysis
-      const pagefindPath = '/pagefind/pagefind-ui.js';
-      const PagefindUI = await import(pagefindPath);
-      new PagefindUI.PagefindUI({
-        element: '#search',
-        showSubResults: true,
-        showImages: false,
-        excerptLength: 20,
-        resetStyles: false,
-        translations: {
-          placeholder: 'Search artists, genres, instruments...',
-          zero_results: 'No artists found for "[SEARCH_TERM]"',
-          many_results: '[COUNT] artists found',
-          one_result: '[COUNT] artist found',
-          searching: 'Searching...'
-        }
-      });
-    } catch {
-      document.getElementById('search').innerHTML =
-        '<p class="text-wiki-text-muted">Search available after build (npm run build)</p>';
+  @media (min-width: 640px) {
+    .results-grid {
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     }
   }
 
-  // Initialize when DOM is ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', loadPagefind);
-  } else {
-    loadPagefind();
+  @media (min-width: 768px) {
+    .results-grid {
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    }
   }
-</script>
+
+  .no-results {
+    margin-top: 2rem;
+    padding: 2rem;
+    background-color: var(--color-bg);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border-light);
+  }
+
+  .suggestions-list {
+    list-style: disc;
+    margin-left: 1.5rem;
+    margin-top: 0.5rem;
+    color: var(--color-text-secondary);
+  }
+
+  .suggestions-list li {
+    margin-bottom: 0.25rem;
+  }
+
+  .search-help {
+    margin-top: 2rem;
+  }
+
+  .search-examples {
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+    background-color: var(--color-bg);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border-light);
+  }
+
+  .examples-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .examples-list li {
+    margin: 0;
+  }
+
+  .examples-list a {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background-color: var(--color-accent-light);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    transition: background-color 0.2s, transform 0.1s;
+  }
+
+  .examples-list a:hover {
+    background-color: var(--color-border);
+    transform: translateY(-1px);
+  }
+
+  /* Highlight styling for search snippets */
+  :global(.search-results-section mark) {
+    background-color: var(--color-accent-light);
+    color: inherit;
+    padding: 0.1rem 0.2rem;
+    border-radius: 2px;
+    font-weight: 500;
+  }
+</style>

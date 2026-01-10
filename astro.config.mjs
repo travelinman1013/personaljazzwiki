@@ -1,34 +1,26 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import tailwind from '@astrojs/tailwind';
-import wikiLinkPlugin from 'remark-wiki-link';
+import cloudflare from '@astrojs/cloudflare';
 
 // https://astro.build/config
 export default defineConfig({
+  // Switch from static to server-side rendering
+  output: 'server',
+
+  // Cloudflare Workers adapter
+  adapter: cloudflare({
+    mode: 'directory',
+    // Access D1, R2, KV bindings via runtime
+    platformProxy: {
+      enabled: true,
+    },
+  }),
+
   site: 'https://jazzapedia.com',
+
   integrations: [tailwind()],
-  markdown: {
-    remarkPlugins: [
-      [
-        wikiLinkPlugin,
-        {
-          // Convert wiki links to URL paths
-          // [[artist_name|Display Name]] -> /artists/artist-name
-          hrefTemplate: (permalink) => `/artists/${permalink}`,
-          // Use the wiki_slug format (lowercase, underscores to hyphens)
-          pageResolver: (name) => [name.toLowerCase().replace(/_/g, '-')],
-          // Use alias as link text if provided, otherwise use the page name
-          aliasDivider: '|',
-          // Class for styling wiki links
-          wikiLinkClassName: 'wiki-link',
-          // Class for links to non-existent pages (red links)
-          newClassName: 'wiki-link-new',
-        },
-      ],
-    ],
-  },
-  // Output static files for Cloudflare Pages
-  output: 'static',
+
   // Build options
   build: {
     // Generate clean URLs without .html extension
@@ -36,13 +28,15 @@ export default defineConfig({
     // Inline all CSS
     inlineStylesheets: 'auto',
   },
-  // Completely disable image optimization
+
+  // Disable image optimization (images served directly from R2)
   image: {
     service: {
       entrypoint: 'astro/assets/services/noop',
     },
   },
-  // Vite configuration to skip content assets
+
+  // Vite configuration
   vite: {
     plugins: [
       {
@@ -57,5 +51,16 @@ export default defineConfig({
         },
       },
     ],
+    ssr: {
+      // Externalize Node.js built-ins for Cloudflare compatibility
+      external: ['node:path', 'node:fs', 'node:url'],
+    },
+  },
+
+  // Markdown config (keep existing wiki-link support for any markdown processing)
+  markdown: {
+    shikiConfig: {
+      theme: 'github-dark',
+    },
   },
 });

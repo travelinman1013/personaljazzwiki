@@ -1,115 +1,100 @@
 ---
-import { getCollection } from 'astro:content';
+/**
+ * Artist Detail Page - SSR with D1 Database
+ * Fetches artist data from Cloudflare D1 instead of content collection
+ */
 import WikiArticle from '../../layouts/WikiArticle.astro';
-import { marked } from 'marked';
 import ConnectionGraph from '../../components/artist/ConnectionGraph.astro';
 import WWOZPlays from '../../components/artist/WWOZPlays.astro';
 import connectionsIndex from '../../data/connections-index.json';
 
-export async function getStaticPaths() {
-  const artists = await getCollection('artists');
-  // Build Set of all artist slugs for red link detection
-  const artistSlugs = artists.map(a => a.id);
+// Get the slug from params
+const { slug } = Astro.params;
 
-  return artists.map((artist) => ({
-    params: { slug: artist.id },
-    props: { artist, artistSlugs },
-  }));
+if (!slug) {
+  return Astro.redirect('/artists');
 }
 
-const { artist, artistSlugs } = Astro.props;
-// Convert to Set for O(1) lookup
-const artistSlugSet = new Set(artistSlugs as string[]);
-const { data } = artist;
+// Get D1 database from Cloudflare runtime
+const runtime = Astro.locals.runtime;
+const db = runtime?.env?.DB;
 
-// Get the raw markdown body
-const rawBody = data._rawBody as string | undefined;
-
-// Process the markdown content
-let htmlContent = '';
-let researchSources: string[] = [];
-if (rawBody) {
-  // Remove the first image reference (it's usually a portrait at the top)
-  let processedBody = rawBody.replace(/^!\[.*?\]\(.*?\)\s*/m, '');
-
-  // Remove the first h1 heading (title is already in layout)
-  processedBody = processedBody.replace(/^#\s+.+\n/m, '');
-
-  // Convert wiki links [[artist_name|Display Name]] to HTML links
-  // Non-existent artists render as plain text (will become links when added)
-  processedBody = processedBody.replace(
-    /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g,
-    (match, pageName, displayName) => {
-      const slug = pageName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
-      const text = displayName || pageName;
-      if (artistSlugSet.has(slug)) {
-        return `<a href="/artists/${slug}" class="wiki-link">${text}</a>`;
-      } else {
-        // Plain text for non-existent artists - will auto-link when artist is added
-        return `<span class="wiki-link-missing">${text}</span>`;
-      }
-    }
-  );
-
-  // Extract research sources from markdown (preserves order: Source1=index 0, etc.)
-  const sourcesMatch = processedBody.match(/\*Sources:\s*(.+?)\*/);
-  if (sourcesMatch) {
-    const sourceLinksRegex = /\[Source\d+\]\(([^)]+)\)/g;
-    let match;
-    while ((match = sourceLinksRegex.exec(sourcesMatch[1])) !== null) {
-      researchSources.push(match[1]); // Extract URL
-    }
-  }
-
-  // Remove enhancement text and sources from body
-  processedBody = processedBody.replace(/\*Enhanced with Perplexity AI research\*\s*\n?/g, '');
-  processedBody = processedBody.replace(/\*Sources:.*\*\s*\n?/g, '');
-
-  // Convert markdown to HTML
-  htmlContent = await marked.parse(processedBody, {
-    gfm: true,
-    breaks: false,
-  });
-
-  // Add IDs to all h2 headings for TOC navigation
-  htmlContent = htmlContent.replace(/<h2>([^<]+)<\/h2>/gi, (match, text) => {
-    const id = text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
-    return `<h2 id="${id}">${text}</h2>`;
-  });
-
-  // Build References HTML section
-  let referencesHtml = '';
-  if (researchSources.length > 0) {
-    referencesHtml = `
-<h2 id="references">References</h2>
-<ol class="references-list">
-${researchSources.map((source, i) => {
-    const isUrl = source.startsWith('http://') || source.startsWith('https://');
-    if (isUrl) {
-      return `  <li id="ref-${i+1}"><a href="${source}" target="_blank" rel="noopener noreferrer">${source}</a></li>`;
-    }
-    return `  <li id="ref-${i+1}">${source}</li>`;
-  }).join('\n')}
-</ol>
-`;
-  }
-
-  // Inject References section before External Links
-  if (htmlContent.includes('<h2 id="external-links">')) {
-    htmlContent = htmlContent.replace(
-      /<h2 id="external-links">/i,
-      `${referencesHtml}<h2 id="external-links">`
-    );
-  } else if (htmlContent.includes('<h2>External Links</h2>')) {
-    htmlContent = htmlContent.replace(
-      /<h2>External Links<\/h2>/i,
-      `${referencesHtml}<h2 id="external-links">External Links</h2>`
-    );
-  } else if (referencesHtml) {
-    // No External Links section, append References at the end
-    htmlContent += referencesHtml;
-  }
+if (!db) {
+  // Fallback for local dev without D1 - redirect to artist list
+  console.error('D1 database not available');
+  return Astro.redirect('/artists');
 }
+
+// Fetch artist from D1
+const artistRow = await db
+  .prepare('SELECT * FROM artists WHERE slug = ?')
+  .bind(slug)
+  .first();
+
+if (!artistRow) {
+  // Artist not found - redirect to 404 or artists list
+  return Astro.redirect('/artists');
+}
+
+// Parse JSON fields from D1
+const genres = artistRow.genres ? JSON.parse(artistRow.genres) : [];
+const instruments = artistRow.instruments ? JSON.parse(artistRow.instruments) : [];
+const spotifyData = artistRow.spotify_data ? JSON.parse(artistRow.spotify_data) : null;
+const audioProfile = artistRow.audio_profile ? JSON.parse(artistRow.audio_profile) : null;
+const externalUrls = artistRow.external_urls ? JSON.parse(artistRow.external_urls) : null;
+const musicalConnections = artistRow.musical_connections ? JSON.parse(artistRow.musical_connections) : null;
+
+// Build the data object that Infobox expects
+const data: Record<string, unknown> = {
+  title: artistRow.title,
+  artist_type: artistRow.artist_type,
+  birth_date: artistRow.birth_date,
+  death_date: artistRow.death_date,
+  genres,
+  instruments,
+  spotify_data: spotifyData,
+  audio_profile: audioProfile,
+  external_urls: externalUrls,
+  musical_connections: musicalConnections,
+  // For portrait in Infobox
+  image_path: artistRow.image_filename ? `/portraits/${artistRow.image_filename}` : undefined,
+  // Infobox also checks infobox.background for artist type styling
+  infobox: {
+    background: artistRow.artist_type,
+    image: artistRow.image_filename,
+  },
+};
+
+// Get bio HTML content
+let htmlContent = artistRow.bio_html || '';
+
+// Process wiki links in bio_html: [[Artist Name|Display Text]] -> HTML links
+// First, we need to get all artist slugs for red link detection
+const allArtistsResult = await db
+  .prepare('SELECT slug FROM artists')
+  .all();
+const artistSlugs = new Set((allArtistsResult.results || []).map((r: any) => r.slug));
+
+// Convert wiki links [[artist_name|Display Name]] to HTML links
+htmlContent = htmlContent.replace(
+  /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g,
+  (match: string, pageName: string, displayName: string) => {
+    const linkSlug = pageName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+    const text = displayName || pageName;
+    if (artistSlugs.has(linkSlug)) {
+      return `<a href="/artists/${linkSlug}" class="wiki-link">${text}</a>`;
+    } else {
+      // Plain text for non-existent artists - will auto-link when artist is added
+      return `<span class="wiki-link-missing">${text}</span>`;
+    }
+  }
+);
+
+// Add IDs to all h2 headings for TOC navigation (if not already present)
+htmlContent = htmlContent.replace(/<h2>([^<]+)<\/h2>/gi, (match: string, text: string) => {
+  const id = text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+  return `<h2 id="${id}">${text}</h2>`;
+});
 
 // Extract h2 headings for table of contents
 const headings: { id: string; text: string }[] = [];
@@ -120,12 +105,12 @@ while ((headingMatch = headingRegex.exec(htmlContent)) !== null) {
 }
 
 // Get title with fallback
-const title = (data.title as string) || artist.id.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
+const title = artistRow.title || slug.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
 
-// Get connections for this artist
+// Get connections for this artist from the static index
 const artistConnections = {
-  forward: (connectionsIndex as any).forward?.[artist.id] || {},
-  reverse: (connectionsIndex as any).reverse?.[artist.id] || {},
+  forward: (connectionsIndex as any).forward?.[slug] || {},
+  reverse: (connectionsIndex as any).reverse?.[slug] || {},
 };
 
 // Check if artist has any connections
@@ -139,18 +124,24 @@ const hasConnections =
 
 // Get name to slug mapping for connection graph navigation
 const nameToSlug = (connectionsIndex as any).nameToSlug || {};
+
+// Set cache headers for stale-while-revalidate caching
+Astro.response.headers.set(
+  'Cache-Control',
+  'public, max-age=60, stale-while-revalidate=86400'
+);
 ---
 
 <WikiArticle title={title} data={data} headings={headings}>
   <Fragment set:html={htmlContent} />
 
   {/* WWOZ Plays Section */}
-  <WWOZPlays artistSlug={artist.id} artistName={title} />
+  <WWOZPlays artistSlug={slug} artistName={title} />
 
   {/* Connection Graph - only if connections exist */}
   {hasConnections && (
     <ConnectionGraph
-      artistSlug={artist.id}
+      artistSlug={slug}
       artistName={title}
       connections={artistConnections}
       nameToSlug={nameToSlug}
