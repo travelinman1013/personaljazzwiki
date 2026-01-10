@@ -1,9 +1,10 @@
 {
-  "generatedAt": "2026-01-10T12:55:21.478Z",
+  "generatedAt": "2026-01-10T13:16:04.469Z",
   "summary": {
     "totalTracks": 17405,
     "matchedTracks": 11405,
-    "uniqueArtists": 8358,
+    "uniqueArtists": 8159,
+    "uniqueGenres": 390,
     "totalDays": 120
   },
   "topArtists": [
@@ -15,7 +16,12 @@
     {
       "name": "Dr. John",
       "slug": "dr-john",
-      "count": 132
+      "count": 180
+    },
+    {
+      "name": "The Meters",
+      "slug": "meters",
+      "count": 93
     },
     {
       "name": "Fats Waller",
@@ -41,11 +47,6 @@
       "name": "Irma Thomas",
       "slug": "irma-thomas",
       "count": 63
-    },
-    {
-      "name": "Meters",
-      "slug": "meters",
-      "count": 56
     },
     {
       "name": "Jon Batiste",
@@ -88,11 +89,6 @@
       "count": 47
     },
     {
-      "name": "dr john",
-      "slug": "dr-john",
-      "count": 47
-    },
-    {
       "name": "Bix Beiderbecke",
       "slug": "bix-beiderbecke",
       "count": 46
@@ -113,18 +109,23 @@
       "count": 39
     },
     {
+      "name": "Neville Brothers",
+      "slug": "the-neville-brothers",
+      "count": 39
+    },
+    {
+      "name": "WALTER WOLFMAN WASHINGTON",
+      "slug": "walter-wolfman-washington",
+      "count": 39
+    },
+    {
       "name": "lucinda williams",
       "slug": "lucinda-williams",
       "count": 38
     },
     {
-      "name": "The Meters",
-      "slug": "the-meters",
-      "count": 37
-    },
-    {
-      "name": "WALTER WOLFMAN WASHINGTON",
-      "slug": "walter-wolfman-washington",
+      "name": "D'Angelo",
+      "slug": "dangelo",
       "count": 37
     },
     {
@@ -133,18 +134,14 @@
       "count": 37
     },
     {
-      "name": "Artist",
+      "name": "Dirty Dozen Brass Band",
+      "slug": "the-dirty-dozen-brass-band",
       "count": 36
     },
     {
       "name": "Earl King",
       "slug": "earl-king",
       "count": 35
-    },
-    {
-      "name": "D'Angelo",
-      "slug": "dangelo",
-      "count": 34
     },
     {
       "name": "James Brown",
@@ -155,16 +152,6 @@
       "name": "Stevie Wonder",
       "slug": "stevie-wonder",
       "count": 32
-    },
-    {
-      "name": "Dirty Dozen Brass Band",
-      "slug": "dirty-dozen-brass-band",
-      "count": 32
-    },
-    {
-      "name": "Neville Brothers",
-      "slug": "neville-brothers",
-      "count": 31
     },
     {
       "name": "Nina Simone",
@@ -192,14 +179,14 @@
       "count": 29
     },
     {
-      "name": "Professor Longhair",
-      "slug": "professor-longhair",
+      "name": "Fats Domino",
+      "slug": "fats-domino",
       "count": 29
     },
     {
-      "name": "Fats Domino",
-      "slug": "fats-domino",
-      "count": 28
+      "name": "Professor Longhair",
+      "slug": "professor-longhair",
+      "count": 29
     },
     {
       "name": "Charles Mingus",
@@ -272,6 +259,16 @@
       "count": 24
     },
     {
+      "name": "radiators",
+      "slug": "the-radiators",
+      "count": 24
+    },
+    {
+      "name": "Harry Connick Jr.",
+      "slug": "harry-connick-jr",
+      "count": 24
+    },
+    {
       "name": "King Floyd",
       "slug": "king-floyd",
       "count": 23
@@ -309,6 +306,11 @@
       "name": "JOHN HARTFORD",
       "slug": "john-hartford",
       "count": 22
+    },
+    {
+      "name": "Fats Waller & His Rhythm",
+      "slug": "fats-waller-and-his-rhythm",
+      "count": 21
     },
     {
       "name": "Eddie Bo",
@@ -366,8 +368,8 @@
       "count": 20
     },
     {
-      "name": "Fats Waller And His Rhythm",
-      "slug": "fats-waller-and-his-rhythm",
+      "name": "howlin' wolf",
+      "slug": "howlin-wolf",
       "count": 20
     },
     {
@@ -396,8 +398,18 @@
       "count": 20
     },
     {
+      "name": "Booker T. & the MG's",
+      "slug": "booker-t-and-the-mgs",
+      "count": 20
+    },
+    {
       "name": "Ellis Marsalis",
       "slug": "ellis-marsalis",
+      "count": 20
+    },
+    {
+      "name": "Screamin Jay Hawkins",
+      "slug": "screamin-jay-hawkins",
       "count": 20
     },
     {
@@ -406,8 +418,8 @@
       "count": 19
     },
     {
-      "name": "radiators",
-      "slug": "radiators",
+      "name": "RL burnside",
+      "slug": "r-l-burnside",
       "count": 19
     },
     {
@@ -461,8 +473,23 @@
       "count": 18
     },
     {
+      "name": "Tin Men",
+      "slug": "tin-men",
+      "count": 18
+    },
+    {
+      "name": "The Wild Magnolias",
+      "slug": "the-wild-magnolias",
+      "count": 18
+    },
+    {
       "name": "Sun Ra",
       "slug": "sun-ra",
+      "count": 18
+    },
+    {
+      "name": "Johnny Guitar Watson",
+      "slug": "johnny-guitar-watson",
       "count": 18
     },
     {
@@ -479,315 +506,290 @@
       "name": "Hunks Of Coal",
       "slug": "hunks-of-coal",
       "count": 18
-    },
-    {
-      "name": "Joe Simon",
-      "slug": "joe-simon",
-      "count": 17
-    },
-    {
-      "name": "Marvin Gaye",
-      "slug": "marvin-gaye",
-      "count": 17
-    },
-    {
-      "name": "Sarah Vaughan",
-      "slug": "sarah-vaughan",
-      "count": 17
-    },
-    {
-      "name": "JON CLEARY",
-      "slug": "jon-cleary",
-      "count": 17
-    },
-    {
-      "name": "donald byrd",
-      "slug": "donald-byrd",
-      "count": 17
     }
   ],
   "topGenres": [
     {
       "name": "jazz",
-      "count": 2235
+      "count": 1522
     },
     {
       "name": "blues",
-      "count": 1442
+      "count": 991
     },
     {
       "name": "cajun",
-      "count": 1255
+      "count": 861
     },
     {
       "name": "ragtime",
-      "count": 885
-    },
-    {
-      "name": "zydeco",
-      "count": 880
+      "count": 652
     },
     {
       "name": "swing music",
-      "count": 862
+      "count": 634
+    },
+    {
+      "name": "zydeco",
+      "count": 609
     },
     {
       "name": "hard bop",
-      "count": 822
+      "count": 560
     },
     {
       "name": "classic blues",
-      "count": 814
+      "count": 525
     },
     {
       "name": "big band",
-      "count": 666
+      "count": 482
     },
     {
       "name": "soul",
-      "count": 526
-    },
-    {
-      "name": "jazz funk",
-      "count": 498
-    },
-    {
-      "name": "vocal jazz",
-      "count": 498
-    },
-    {
-      "name": "classic soul",
-      "count": 476
-    },
-    {
-      "name": "bebop",
-      "count": 436
-    },
-    {
-      "name": "blues rock",
-      "count": 391
-    },
-    {
-      "name": "modern blues",
-      "count": 391
-    },
-    {
-      "name": "americana",
-      "count": 389
-    },
-    {
-      "name": "northern soul",
-      "count": 381
-    },
-    {
-      "name": "country blues",
       "count": 376
     },
     {
+      "name": "vocal jazz",
+      "count": 342
+    },
+    {
+      "name": "jazz funk",
+      "count": 334
+    },
+    {
+      "name": "classic soul",
+      "count": 325
+    },
+    {
+      "name": "bebop",
+      "count": 289
+    },
+    {
+      "name": "blues rock",
+      "count": 280
+    },
+    {
+      "name": "modern blues",
+      "count": 272
+    },
+    {
       "name": "soul blues",
-      "count": 354
+      "count": 263
+    },
+    {
+      "name": "americana",
+      "count": 259
     },
     {
       "name": "funk",
-      "count": 338
+      "count": 242
     },
     {
-      "name": "free jazz",
-      "count": 328
+      "name": "country blues",
+      "count": 230
+    },
+    {
+      "name": "northern soul",
+      "count": 221
     },
     {
       "name": "motown",
-      "count": 308
+      "count": 206
     },
     {
       "name": "cool jazz",
-      "count": 286
+      "count": 196
     },
     {
       "name": "alt country",
-      "count": 262
+      "count": 194
     },
     {
-      "name": "jazz fusion",
-      "count": 255
+      "name": "free jazz",
+      "count": 189
     },
     {
       "name": "boogie-woogie",
-      "count": 248
+      "count": 166
+    },
+    {
+      "name": "jazz fusion",
+      "count": 162
     },
     {
       "name": "jazz blues",
-      "count": 248
+      "count": 162
     },
     {
       "name": "soul jazz",
-      "count": 227
+      "count": 152
     },
     {
       "name": "latin jazz",
-      "count": 214
-    },
-    {
-      "name": "rockabilly",
-      "count": 190
-    },
-    {
-      "name": "reggae",
-      "count": 183
+      "count": 148
     },
     {
       "name": "folk",
-      "count": 179
-    },
-    {
-      "name": "outlaw country",
-      "count": 173
-    },
-    {
-      "name": "doo-wop",
-      "count": 171
-    },
-    {
-      "name": "bluegrass",
-      "count": 164
+      "count": 144
     },
     {
       "name": "christmas",
-      "count": 159
+      "count": 131
+    },
+    {
+      "name": "outlaw country",
+      "count": 119
+    },
+    {
+      "name": "reggae",
+      "count": 105
     },
     {
       "name": "roots reggae",
-      "count": 159
+      "count": 96
+    },
+    {
+      "name": "doo-wop",
+      "count": 95
+    },
+    {
+      "name": "rockabilly",
+      "count": 95
     },
     {
       "name": "retro soul",
-      "count": 132
-    },
-    {
-      "name": "roots rock",
-      "count": 115
-    },
-    {
-      "name": "neo soul",
-      "count": 114
-    },
-    {
-      "name": "rock and roll",
-      "count": 109
-    },
-    {
-      "name": "rocksteady",
-      "count": 109
-    },
-    {
-      "name": "singer-songwriter",
-      "count": 107
-    },
-    {
-      "name": "classic country",
-      "count": 105
+      "count": 91
     },
     {
       "name": "afrobeat",
-      "count": 105
+      "count": 88
     },
     {
-      "name": "brazilian jazz",
-      "count": 103
+      "name": "roots rock",
+      "count": 87
     },
     {
-      "name": "bossa nova",
-      "count": 99
-    },
-    {
-      "name": "newgrass",
-      "count": 98
+      "name": "bluegrass",
+      "count": 87
     },
     {
       "name": "traditional folk",
-      "count": 95
+      "count": 83
+    },
+    {
+      "name": "brazilian jazz",
+      "count": 82
+    },
+    {
+      "name": "brass band",
+      "count": 82
+    },
+    {
+      "name": "bossa nova",
+      "count": 80
+    },
+    {
+      "name": "mpb",
+      "count": 76
+    },
+    {
+      "name": "singer-songwriter",
+      "count": 73
+    },
+    {
+      "name": "neo soul",
+      "count": 72
+    },
+    {
+      "name": "classic country",
+      "count": 68
+    },
+    {
+      "name": "post-disco",
+      "count": 64
     }
   ],
   "topShows": [
     {
+      "name": "-",
+      "trackCount": 2390
+    },
+    {
       "name": "New Orleans Music Show",
-      "trackCount": 2448
+      "trackCount": 1698
     },
     {
       "name": "Traditional Jazz",
-      "trackCount": 2044
+      "trackCount": 1584
     },
     {
       "name": "Jazz from Jax Brewery",
-      "trackCount": 1650
+      "trackCount": 1119
     },
     {
       "name": "The Morning Set",
-      "trackCount": 1629
+      "trackCount": 983
     },
     {
       "name": "Kitchen Sink",
-      "trackCount": 1336
+      "trackCount": 849
     },
     {
       "name": "R&B",
-      "trackCount": 802
-    },
-    {
-      "name": "Blues and R&B",
-      "trackCount": 727
+      "trackCount": 601
     },
     {
       "name": "Music of Mass Distraction",
-      "trackCount": 600
-    },
-    {
-      "name": "The Dean's List",
-      "trackCount": 560
-    },
-    {
-      "name": "Blues Eclectic",
-      "trackCount": 553
+      "trackCount": 452
     },
     {
       "name": "Tudo Bem (Brazilian)",
-      "trackCount": 486
+      "trackCount": 438
     },
     {
       "name": "Sittin' at the Crossroad",
-      "trackCount": 460
-    },
-    {
-      "name": "Adjacent",
-      "trackCount": 423
-    },
-    {
-      "name": "Cajun and Zydeco",
-      "trackCount": 394
-    },
-    {
-      "name": "The Blues Breakdown",
-      "trackCount": 368
-    },
-    {
-      "name": "The Sunday Morning Jazz Set",
-      "trackCount": 362
-    },
-    {
-      "name": "Blues",
       "trackCount": 351
     },
     {
-      "name": "Homespun Americana",
+      "name": "Adjacent",
       "trackCount": 343
     },
     {
-      "name": "What's New",
-      "trackCount": 328
+      "name": "blues",
+      "trackCount": 313
+    },
+    {
+      "name": "Blues and R&B",
+      "trackCount": 313
+    },
+    {
+      "name": "Cajun and Zydeco",
+      "trackCount": 296
     },
     {
       "name": "World Journey",
-      "trackCount": 307
+      "trackCount": 292
+    },
+    {
+      "name": "New Orleans Music Show - Saturday",
+      "trackCount": 267
+    },
+    {
+      "name": "The Blues Breakdown",
+      "trackCount": 261
+    },
+    {
+      "name": "The Dean's List",
+      "trackCount": 261
+    },
+    {
+      "name": "Blues Eclectic",
+      "trackCount": 253
+    },
+    {
+      "name": "The Sunday Morning Jazz Set",
+      "trackCount": 239
     }
   ]
 }

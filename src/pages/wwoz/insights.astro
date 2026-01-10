@@ -14,7 +14,7 @@ const { summary, topArtists, topGenres, topShows } = insightsData;
 const daysTracked = summary.totalDays;
 const totalTracks = summary.totalTracks;
 const uniqueArtists = summary.uniqueArtists;
-const uniqueGenres = topGenres.length; // Total unique genres in the data
+const uniqueGenres = summary.uniqueGenres ?? topGenres.length; // Use actual count from summary
 const matchRate = totalTracks > 0 ? ((summary.matchedTracks / totalTracks) * 100).toFixed(1) : '0';
 
 // Calculate max for bar chart scaling

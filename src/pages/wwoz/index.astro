@@ -91,8 +91,8 @@ const formatDate = (dateStr: string) => {
       </div>
     </div>
 
-    <!-- Quick Links -->
-    <div class="flex flex-wrap gap-2 mb-8">
+    <!-- Quick Links & Sort Toggle -->
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
       <a
         href="/wwoz/insights"
         class="inline-flex items-center px-4 py-2 bg-wiki-bg border border-wiki-border rounded-lg text-sm hover:bg-wiki-accent-light hover:border-wiki-link transition-colors"
@@ -102,6 +102,24 @@ const formatDate = (dateStr: string) => {
         </svg>
         View Insights
       </a>
+
+      <!-- Sort Toggle -->
+      <div class="flex items-center gap-2">
+        <span class="text-sm text-wiki-text-muted">Sort:</span>
+        <button
+          id="sort-toggle"
+          class="inline-flex items-center gap-2 px-3 py-1.5 bg-wiki-bg border border-wiki-border rounded-lg text-sm hover:bg-wiki-accent-light hover:border-wiki-link transition-colors"
+          data-sort="desc"
+        >
+          <svg id="sort-icon-desc" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4 4m0 0l4-4m-4 4V4" />
+          </svg>
+          <svg id="sort-icon-asc" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v16" />
+          </svg>
+          <span id="sort-label">Newest First</span>
+        </button>
+      </div>
     </div>
 
     <!-- Monthly Archive -->
@@ -168,4 +186,43 @@ const formatDate = (dateStr: string) => {
       </p>
     </div>
   </div>
+
+  <script>
+    // Sort toggle functionality
+    const sortToggle = document.getElementById('sort-toggle');
+    const sortLabel = document.getElementById('sort-label');
+    const sortIconDesc = document.getElementById('sort-icon-desc');
+    const sortIconAsc = document.getElementById('sort-icon-asc');
+    const archiveContainer = document.querySelector('.space-y-8');
+
+    if (sortToggle && archiveContainer) {
+      sortToggle.addEventListener('click', () => {
+        const currentSort = sortToggle.getAttribute('data-sort');
+        const newSort = currentSort === 'desc' ? 'asc' : 'desc';
+
+        // Update button state
+        sortToggle.setAttribute('data-sort', newSort);
+        if (sortLabel) sortLabel.textContent = newSort === 'desc' ? 'Newest First' : 'Oldest First';
+        sortIconDesc?.classList.toggle('hidden', newSort === 'asc');
+        sortIconAsc?.classList.toggle('hidden', newSort === 'desc');
+
+        // Reverse the order of month sections
+        const sections = Array.from(archiveContainer.children);
+        sections.reverse();
+        archiveContainer.innerHTML = '';
+        sections.forEach(section => archiveContainer.appendChild(section));
+
+        // Reverse the order of days within each month
+        sections.forEach(section => {
+          const grid = section.querySelector('.grid');
+          if (grid) {
+            const days = Array.from(grid.children);
+            days.reverse();
+            grid.innerHTML = '';
+            days.forEach(day => grid.appendChild(day));
+          }
+        });
+      });
+    }
+  </script>
 </Layout>

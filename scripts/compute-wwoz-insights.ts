@@ -48,6 +48,7 @@ interface InsightsOutput {
     totalTracks: number;
     matchedTracks: number;
     uniqueArtists: number;
+    uniqueGenres: number;
     totalDays: number;
   };
   topArtists: { name: string; count: number; slug?: string }[];
@@ -109,6 +110,9 @@ function parseWWOZStats(content: string): WWOZStats | null {
 
 /**
  * Parse tracks table from markdown
+ * Handles two formats:
+ * - With Genres: | Time | Artist | Title | Album | Genres | Show | Host | Status | Confidence | Spotify |
+ * - Without Genres: | Time | Artist | Title | Album | Show | Host | Status | Confidence | Spotify |
  */
 function parseWWOZTracks(content: string): WWOZTrack[] {
   const tracks: WWOZTrack[] = [];
@@ -117,17 +121,33 @@ function parseWWOZTracks(content: string): WWOZTrack[] {
   const tracksSection = content.match(/## Tracks\s*\n([\s\S]*?)(?=\n##|$)/);
   if (!tracksSection) return tracks;
 
+  // Detect if this file has the Genres column by checking the header
+  const hasGenresColumn = tracksSection[1].includes('| Genres |');
+
   // Parse table rows (skip header and separator)
   const lines = tracksSection[1].trim().split('\n');
   for (const line of lines) {
     // Skip header row and separator
     if (line.includes('| Time |') || line.includes('| :---')) continue;
 
-    // Parse track row: | Time | Artist | Title | Album | Genres | Show | Host | Status | Confidence | Spotify |
     const cells = line.split('|').map(c => c.trim()).filter(c => c);
     if (cells.length < 8) continue;
 
-    const [time, artist, title, album, genresStr, show, host, status, confidenceStr, spotifyCell] = cells;
+    let time: string, artist: string, title: string, album: string;
+    let genresStr: string, show: string, host: string, status: string;
+    let confidenceStr: string, spotifyCell: string;
+
+    if (hasGenresColumn) {
+      // Format: | Time | Artist | Title | Album | Genres | Show | Host | Status | Confidence | Spotify |
+      [time, artist, title, album, genresStr, show, host, status, confidenceStr, spotifyCell] = cells;
+    } else {
+      // Format: | Time | Artist | Title | Album | Show | Host | Status | Confidence | Spotify |
+      [time, artist, title, album, show, host, status, confidenceStr, spotifyCell] = cells;
+      genresStr = '-'; // No genres in this format
+    }
+
+    // Skip header rows that weren't caught (where artist is literally "Artist")
+    if (artist.toLowerCase() === 'artist') continue;
 
     // Parse genres (comma-separated)
     const genres = genresStr && genresStr !== '-'
@@ -160,7 +180,7 @@ function parseWWOZTracks(content: string): WWOZTrack[] {
       genres,
       show,
       host: host && host !== '-' ? host : undefined,
-      status: status.includes('✅') ? 'found' : 'not_found',
+      status: status?.includes('✅') ? 'found' : 'not_found',
       confidence,
       spotifyUrl,
     });
@@ -178,6 +198,31 @@ function toArtistSlug(name: string): string {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '');
+}
+
+/**
+ * Normalize artist name for deduplication
+ * Handles variations like "Dr. John" vs "dr john", "The Meters" vs "Meters"
+ */
+function normalizeArtistName(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    // Remove wiki link syntax [[...]]
+    .replace(/\[\[.*?\]\]/g, match => {
+      // Extract display name from [[path|display]] or just [[name]]
+      const parts = match.slice(2, -2).split('|');
+      return parts[parts.length - 1];
+    })
+    // Remove punctuation (periods, commas, apostrophes, quotes)
+    .replace(/[.,'"!?]/g, '')
+    // Normalize "and" variations
+    .replace(/\s+&\s+/g, ' and ')
+    // Remove leading "the "
+    .replace(/^the\s+/, '')
+    // Collapse multiple spaces
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 // ============================================================================
@@ -203,7 +248,7 @@ async function main() {
   // Load artist entries for matching
   console.log('Loading artist entries...');
   const artistEntries: ArtistEntry[] = [];
-  const artistNameMap = new Map<string, string>(); // lowercase name -> slug
+  const artistNameMap = new Map<string, string>(); // normalized name -> slug
 
   if (fs.existsSync(artistsDir)) {
     const artistFiles = fs.readdirSync(artistsDir).filter(f => f.endsWith('.md'));
@@ -222,7 +267,8 @@ async function main() {
 
       const name = (data.title as string) || file.replace(/\.md$/, '');
       artistEntries.push({ id: slug, name });
-      artistNameMap.set(name.toLowerCase().trim(), slug);
+      // Use normalized name for matching
+      artistNameMap.set(normalizeArtistName(name), slug);
     }
     console.log(`  Loaded ${artistEntries.length} artists`);
   } else {
@@ -261,18 +307,22 @@ async function main() {
     daysProcessed++;
 
     for (const track of tracks) {
-      // Artist aggregation with exact match lookup
-      const key = track.artist.toLowerCase().trim();
-      if (!artistPlays.has(key)) {
-        // Try exact match first
-        const slug = artistNameMap.get(key);
-        artistPlays.set(key, {
-          name: track.artist,
+      // Artist aggregation with normalized key for deduplication
+      const normalizedKey = normalizeArtistName(track.artist);
+
+      // Skip empty or invalid artist names
+      if (!normalizedKey || normalizedKey.length < 2) continue;
+
+      if (!artistPlays.has(normalizedKey)) {
+        // Try to find wiki slug using normalized name
+        const slug = artistNameMap.get(normalizedKey);
+        artistPlays.set(normalizedKey, {
+          name: track.artist, // Keep original display name
           slug,
           count: 0
         });
       }
-      artistPlays.get(key)!.count++;
+      artistPlays.get(normalizedKey)!.count++;
 
       // Genre aggregation
       for (const genre of track.genres) {
@@ -280,9 +330,9 @@ async function main() {
       }
 
       // Show aggregation
-      const showKey = track.show.toLowerCase();
+      const showKey = track.show?.toLowerCase() || 'unknown';
       if (!showCounts.has(showKey)) {
-        showCounts.set(showKey, { name: track.show, trackCount: 0 });
+        showCounts.set(showKey, { name: track.show || 'Unknown', trackCount: 0 });
       }
       showCounts.get(showKey)!.trackCount++;
     }
@@ -309,6 +359,7 @@ async function main() {
       totalTracks,
       matchedTracks: totalFound,
       uniqueArtists: artistPlays.size,
+      uniqueGenres: genreCounts.size,
       totalDays: daysProcessed,
     },
     topArtists,
