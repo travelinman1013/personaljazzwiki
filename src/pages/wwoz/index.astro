@@ -1,0 +1,166 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+// Get all WWOZ logs
+const wwozLogs = await getCollection('wwoz');
+
+// Sort by date descending
+const sortedLogs = wwozLogs.sort((a, b) => b.id.localeCompare(a.id));
+
+// Calculate summary statistics
+let totalTracks = 0;
+let totalMatched = 0;
+let totalNotFound = 0;
+
+sortedLogs.forEach(log => {
+  const stats = log.data.stats;
+  if (stats) {
+    totalTracks += stats.totalTracks;
+    totalMatched += stats.successfullyFound;
+    totalNotFound += stats.notFound;
+  }
+});
+
+const matchRate = totalTracks > 0 ? ((totalMatched / totalTracks) * 100).toFixed(1) : '0';
+
+// Group logs by month (YYYY-MM)
+const logsByMonth = new Map<string, typeof sortedLogs>();
+sortedLogs.forEach(log => {
+  const month = log.id.substring(0, 7); // YYYY-MM
+  if (!logsByMonth.has(month)) {
+    logsByMonth.set(month, []);
+  }
+  logsByMonth.get(month)!.push(log);
+});
+
+// Format month for display
+const formatMonth = (yearMonth: string) => {
+  const [year, month] = yearMonth.split('-');
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                      'July', 'August', 'September', 'October', 'November', 'December'];
+  return `${monthNames[parseInt(month, 10) - 1]} ${year}`;
+};
+
+// Format date for display
+const formatDate = (dateStr: string) => {
+  const date = new Date(dateStr + 'T12:00:00');
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  return {
+    day: days[date.getDay()],
+    dayNum: date.getDate(),
+  };
+};
+---
+
+<Layout title="WWOZ Archive">
+  <div class="article-content">
+    <h1>WWOZ Radio Archive</h1>
+
+    <p class="text-wiki-text-secondary mb-6">
+      Daily track logs from <a href="https://wwoz.org" class="text-wiki-link">WWOZ 90.7 FM</a>,
+      New Orleans' jazz and heritage station. Tracks are matched against Spotify metadata
+      for enriched artist and genre information.
+    </p>
+
+    <!-- Summary Stats -->
+    <div class="bg-wiki-accent-light border border-wiki-border rounded-lg p-4 mb-8">
+      <h2 class="text-lg font-serif mb-3">Archive Statistics</h2>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="text-center">
+          <div class="text-2xl font-bold text-wiki-text-heading">{sortedLogs.length}</div>
+          <div class="text-sm text-wiki-text-muted">Days Archived</div>
+        </div>
+        <div class="text-center">
+          <div class="text-2xl font-bold text-wiki-text-heading">{totalTracks.toLocaleString()}</div>
+          <div class="text-sm text-wiki-text-muted">Total Tracks</div>
+        </div>
+        <div class="text-center">
+          <div class="text-2xl font-bold text-green-600">{totalMatched.toLocaleString()}</div>
+          <div class="text-sm text-wiki-text-muted">Matched</div>
+        </div>
+        <div class="text-center">
+          <div class="text-2xl font-bold text-jazz-amber">{matchRate}%</div>
+          <div class="text-sm text-wiki-text-muted">Match Rate</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="flex flex-wrap gap-2 mb-8">
+      <a
+        href="/wwoz/insights"
+        class="inline-flex items-center px-4 py-2 bg-wiki-bg border border-wiki-border rounded-lg text-sm hover:bg-wiki-accent-light hover:border-wiki-link transition-colors"
+      >
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+        View Insights
+      </a>
+    </div>
+
+    <!-- Monthly Archive -->
+    <div class="space-y-8">
+      {Array.from(logsByMonth.entries()).map(([month, logs]) => {
+        const monthTracks = logs.reduce((sum, log) => sum + (log.data.stats?.totalTracks || 0), 0);
+        const monthMatched = logs.reduce((sum, log) => sum + (log.data.stats?.successfullyFound || 0), 0);
+        const monthRate = monthTracks > 0 ? ((monthMatched / monthTracks) * 100).toFixed(0) : '0';
+
+        return (
+          <section>
+            <h2 class="text-xl font-serif border-b border-wiki-border pb-2 mb-4">
+              {formatMonth(month)}
+              <span class="text-wiki-text-muted text-sm font-normal ml-2">
+                ({logs.length} days, {monthTracks.toLocaleString()} tracks, {monthRate}% matched)
+              </span>
+            </h2>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+              {logs.map(log => {
+                const { day, dayNum } = formatDate(log.id);
+                const stats = log.data.stats;
+                const rate = stats && stats.totalTracks > 0
+                  ? ((stats.successfullyFound / stats.totalTracks) * 100).toFixed(0)
+                  : '0';
+
+                return (
+                  <a
+                    href={`/wwoz/${log.id}`}
+                    class="group p-3 bg-wiki-bg border border-wiki-border rounded-lg hover:border-wiki-link hover:bg-wiki-accent-light transition-all"
+                  >
+                    <div class="text-lg font-bold text-wiki-text-heading group-hover:text-wiki-link">
+                      {dayNum}
+                    </div>
+                    <div class="text-xs text-wiki-text-muted mb-2">{day}</div>
+                    {stats && (
+                      <div class="text-xs space-y-0.5">
+                        <div class="flex justify-between">
+                          <span class="text-wiki-text-muted">Tracks:</span>
+                          <span class="text-wiki-text">{stats.totalTracks}</span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span class="text-wiki-text-muted">Match:</span>
+                          <span class={parseInt(rate) >= 60 ? 'text-green-600' : parseInt(rate) >= 40 ? 'text-jazz-amber' : 'text-red-400'}>
+                            {rate}%
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </a>
+                );
+              })}
+            </div>
+          </section>
+        );
+      })}
+    </div>
+
+    <!-- Footer info -->
+    <div class="mt-8 pt-4 border-t border-wiki-border text-sm text-wiki-text-muted">
+      <p>
+        Data collected from WWOZ playlists. Tracks are matched against Spotify's metadata
+        to enrich artist information with genres, albums, and links. Match confidence
+        varies based on spelling accuracy and availability in Spotify's catalog.
+      </p>
+    </div>
+  </div>
+</Layout>

@@ -62,6 +62,28 @@ Artist markdown files live in an external Obsidian vault (`/Artists/`) and are s
 
 Artist frontmatter includes: `title`, `artist_type`, `birth_date`, `death_date`, `genres[]`, `instruments[]`, `spotify_data`, `audio_profile`, `musical_connections`, `external_urls`. The schema uses `.passthrough()` to allow any additional fields.
 
+## Spotify Metadata Enrichment
+
+A local Spotify database (Anna's Archive dump) is available for enriching artist data:
+
+**Database Location:** `/Volumes/the-eagle/spotify_metadata/annas_archive_spotify_2025_07_metadata/`
+
+**Enrichment Scripts** (in `scripts/`, run with `.venv`):
+- `spotify-matcher.py` - Maps wiki artists to Spotify IDs
+- `download-portraits.py` - Downloads missing artist portraits
+- `update-genres.py` - Replaces genres with Spotify data
+- `fix-portrait-case.py` - Fixes filename case mismatches
+
+```bash
+source .venv/bin/activate
+python scripts/spotify-matcher.py
+python scripts/download-portraits.py
+python scripts/update-genres.py
+npm run sync
+```
+
+See `~/.claude/skills/spotify-metadata.md` for full database schema and query examples.
+
 ## Deployment
 
 GitHub repo: `travelinman1013/personaljazzwiki`. Cloudflare Pages deployment via GitHub Actions. See `DEPLOYMENT.md` for setup instructions including required secrets (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`).

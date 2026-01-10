@@ -1,0 +1,334 @@
+---
+/**
+ * WWOZPlays - Display recent WWOZ plays for an artist
+ *
+ * Searches the WWOZ collection for tracks matching the artist name
+ * and displays them in a table with links to daily logs and Spotify.
+ */
+import { getCollection } from 'astro:content';
+
+interface Props {
+  artistSlug: string;
+  artistName: string;
+}
+
+const { artistSlug, artistName } = Astro.props;
+
+// Get all WWOZ daily logs
+const wwozLogs = await getCollection('wwoz');
+
+// Search for tracks matching this artist
+interface MatchedTrack {
+  date: string;
+  time: string;
+  title: string;
+  album?: string;
+  show: string;
+  host?: string;
+  spotifyUrl?: string;
+  confidence?: number;
+}
+
+const matchedTracks: MatchedTrack[] = [];
+
+// Normalize artist name for matching
+const normalizedArtistName = artistName.toLowerCase().trim();
+const artistWords = normalizedArtistName.split(/\s+/);
+
+// Also match on slug variations
+const slugVariations = [
+  artistSlug,
+  artistSlug.replace(/-/g, ' '),
+  artistName.toLowerCase()
+];
+
+for (const log of wwozLogs) {
+  const tracks = log.data.tracks || [];
+  const date = log.data.date;
+
+  for (const track of tracks) {
+    if (track.status !== 'found') continue; // Only show found tracks
+
+    const trackArtist = track.artist.toLowerCase().trim();
+
+    // Match strategies:
+    // 1. Exact match
+    // 2. Artist name contained in track artist (handles "feat." credits)
+    // 3. Track artist contained in artist name
+    // 4. All words of artist name present in track artist
+
+    const isMatch =
+      trackArtist === normalizedArtistName ||
+      trackArtist.includes(normalizedArtistName) ||
+      normalizedArtistName.includes(trackArtist) ||
+      artistWords.every(word => trackArtist.includes(word)) ||
+      slugVariations.some(v => trackArtist.includes(v));
+
+    if (isMatch) {
+      matchedTracks.push({
+        date,
+        time: track.time,
+        title: track.title,
+        album: track.album,
+        show: track.show,
+        host: track.host,
+        spotifyUrl: track.spotifyUrl,
+        confidence: track.confidence
+      });
+    }
+  }
+}
+
+// Sort by date (newest first), then by time
+matchedTracks.sort((a, b) => {
+  const dateCompare = b.date.localeCompare(a.date);
+  if (dateCompare !== 0) return dateCompare;
+  return b.time.localeCompare(a.time);
+});
+
+// Limit to most recent 10 plays
+const recentPlays = matchedTracks.slice(0, 10);
+const totalPlays = matchedTracks.length;
+const hasPlays = recentPlays.length > 0;
+
+// Format date for display
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr + 'T12:00:00');
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  });
+}
+---
+
+{hasPlays && (
+  <section class="wwoz-plays-section">
+    <h2 id="heard-on-wwoz">Heard on WWOZ</h2>
+
+    <p class="wwoz-intro">
+      {artistName} has been played {totalPlays} time{totalPlays !== 1 ? 's' : ''} on
+      <a href="https://wwoz.org" target="_blank" rel="noopener noreferrer">WWOZ 90.7 FM</a>,
+      New Orleans' jazz and heritage station.
+      {totalPlays > 10 && ` Showing the ${recentPlays.length} most recent plays.`}
+    </p>
+
+    <div class="plays-table-container">
+      <table class="plays-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Title</th>
+            <th>Show</th>
+            <th>Spotify</th>
+          </tr>
+        </thead>
+        <tbody>
+          {recentPlays.map(track => (
+            <tr>
+              <td>
+                <a href={`/wwoz/${track.date}`} class="date-link">
+                  {formatDate(track.date)}
+                </a>
+              </td>
+              <td class="time">{track.time}</td>
+              <td class="title">
+                <span class="track-title">{track.title}</span>
+                {track.album && (
+                  <span class="album">from {track.album}</span>
+                )}
+              </td>
+              <td class="show">
+                {track.show}
+                {track.host && (
+                  <span class="host">w/ {track.host}</span>
+                )}
+              </td>
+              <td class="spotify">
+                {track.spotifyUrl ? (
+                  <a
+                    href={track.spotifyUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="spotify-link"
+                    title="Listen on Spotify"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+                    </svg>
+                  </a>
+                ) : (
+                  <span class="no-spotify">-</span>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    {totalPlays > 10 && (
+      <p class="view-all-link">
+        <a href={`/wwoz?artist=${encodeURIComponent(artistName)}`}>
+          View all {totalPlays} plays
+        </a>
+      </p>
+    )}
+  </section>
+)}
+
+<style>
+  .wwoz-plays-section {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .wwoz-plays-section h2 {
+    font-family: 'Playfair Display Variable', Georgia, serif;
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--color-text-heading);
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0.25rem;
+  }
+
+  .wwoz-intro {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 1rem;
+  }
+
+  .wwoz-intro a {
+    color: var(--color-link);
+    text-decoration: none;
+  }
+
+  .wwoz-intro a:hover {
+    text-decoration: underline;
+  }
+
+  .plays-table-container {
+    overflow-x: auto;
+    margin-bottom: 0.75rem;
+  }
+
+  .plays-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+
+  .plays-table th,
+  .plays-table td {
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--color-border-light);
+  }
+
+  .plays-table th {
+    background: var(--color-bg-nav);
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-secondary);
+  }
+
+  .plays-table tbody tr:hover {
+    background: var(--color-bg);
+  }
+
+  .date-link {
+    color: var(--color-link);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .date-link:hover {
+    text-decoration: underline;
+  }
+
+  .time {
+    font-family: 'JetBrains Mono Variable', monospace;
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+  }
+
+  .title .track-title {
+    display: block;
+    font-weight: 500;
+  }
+
+  .title .album {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    font-style: italic;
+    margin-top: 0.125rem;
+  }
+
+  .show {
+    white-space: nowrap;
+  }
+
+  .show .host {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+  }
+
+  .spotify {
+    text-align: center;
+  }
+
+  .spotify-link {
+    color: #1DB954;
+    transition: transform 0.15s ease;
+    display: inline-block;
+  }
+
+  .spotify-link:hover {
+    transform: scale(1.1);
+  }
+
+  .no-spotify {
+    color: var(--color-text-secondary);
+  }
+
+  .view-all-link {
+    font-size: 0.875rem;
+    text-align: right;
+  }
+
+  .view-all-link a {
+    color: var(--color-link);
+    text-decoration: none;
+  }
+
+  .view-all-link a:hover {
+    text-decoration: underline;
+  }
+
+  /* Mobile responsiveness */
+  @media (max-width: 640px) {
+    .plays-table {
+      font-size: 0.8rem;
+    }
+
+    .plays-table th,
+    .plays-table td {
+      padding: 0.375rem 0.5rem;
+    }
+
+    .title .album {
+      display: none;
+    }
+
+    .show .host {
+      display: none;
+    }
+  }
+</style>

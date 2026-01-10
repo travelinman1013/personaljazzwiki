@@ -1,0 +1,489 @@
+---
+/**
+ * ConnectionGraph - D3.js Force-Directed Graph of Artist Connections
+ *
+ * Displays musical connections (collaborators, influenced, mentors) as an
+ * interactive force-directed graph. Nodes are clickable and navigate to
+ * artist pages.
+ */
+
+interface MusicalConnections {
+  collaborators?: string[];
+  influenced?: string[];
+  mentors?: string[];
+}
+
+interface ReverseConnections {
+  collaboratedWith?: string[];
+  influencedBy?: string[];
+  mentoredBy?: string[];
+}
+
+interface Props {
+  artistSlug: string;
+  artistName: string;
+  connections: {
+    forward?: MusicalConnections;
+    reverse?: ReverseConnections;
+  };
+  nameToSlug?: Record<string, string>;
+}
+
+const { artistSlug, artistName, connections, nameToSlug = {} } = Astro.props;
+
+// Build the graph data
+interface Node {
+  id: string;
+  name: string;
+  slug: string | null;
+  type: 'center' | 'collaborator' | 'influenced' | 'mentor' | 'collaboratedWith' | 'influencedBy' | 'mentoredBy';
+}
+
+interface Link {
+  source: string;
+  target: string;
+  type: string;
+}
+
+const nodes: Node[] = [];
+const links: Link[] = [];
+const nodeIds = new Set<string>();
+
+// Helper to convert name to slug
+function toSlug(name: string): string | null {
+  const normalized = name.toLowerCase().trim();
+  if (nameToSlug[normalized]) return nameToSlug[normalized];
+  // Try converting to slug format
+  const asSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+  if (nameToSlug[asSlug]) return nameToSlug[asSlug];
+  return null;
+}
+
+// Add center node
+nodes.push({
+  id: artistSlug,
+  name: artistName,
+  slug: artistSlug,
+  type: 'center'
+});
+nodeIds.add(artistSlug);
+
+// Process forward connections
+const forward = connections.forward || {};
+
+// Collaborators
+(forward.collaborators || []).forEach(name => {
+  const id = `collab-${name}`;
+  if (!nodeIds.has(id)) {
+    nodes.push({ id, name, slug: toSlug(name), type: 'collaborator' });
+    nodeIds.add(id);
+  }
+  links.push({ source: artistSlug, target: id, type: 'collaborator' });
+});
+
+// Influenced
+(forward.influenced || []).forEach(name => {
+  const id = `inf-${name}`;
+  if (!nodeIds.has(id)) {
+    nodes.push({ id, name, slug: toSlug(name), type: 'influenced' });
+    nodeIds.add(id);
+  }
+  links.push({ source: artistSlug, target: id, type: 'influenced' });
+});
+
+// Mentors
+(forward.mentors || []).forEach(name => {
+  const id = `mentor-${name}`;
+  if (!nodeIds.has(id)) {
+    nodes.push({ id, name, slug: toSlug(name), type: 'mentor' });
+    nodeIds.add(id);
+  }
+  links.push({ source: id, target: artistSlug, type: 'mentor' });
+});
+
+// Process reverse connections
+const reverse = connections.reverse || {};
+
+// Collaborated with (others who list this artist as collaborator)
+(reverse.collaboratedWith || []).forEach(slug => {
+  const id = `collab-rev-${slug}`;
+  if (!nodeIds.has(id)) {
+    nodes.push({ id, name: slug.replace(/-/g, ' '), slug, type: 'collaboratedWith' });
+    nodeIds.add(id);
+  }
+  links.push({ source: id, target: artistSlug, type: 'collaboratedWith' });
+});
+
+// Influenced by (others who list this artist as influence)
+(reverse.influencedBy || []).forEach(slug => {
+  const id = `inf-rev-${slug}`;
+  if (!nodeIds.has(id)) {
+    nodes.push({ id, name: slug.replace(/-/g, ' '), slug, type: 'influencedBy' });
+    nodeIds.add(id);
+  }
+  links.push({ source: artistSlug, target: id, type: 'influencedBy' });
+});
+
+// Mentored by (others who list this artist as mentor)
+(reverse.mentoredBy || []).forEach(slug => {
+  const id = `mentor-rev-${slug}`;
+  if (!nodeIds.has(id)) {
+    nodes.push({ id, name: slug.replace(/-/g, ' '), slug, type: 'mentoredBy' });
+    nodeIds.add(id);
+  }
+  links.push({ source: artistSlug, target: id, type: 'mentoredBy' });
+});
+
+// Check if there are any connections to display
+const hasConnections = links.length > 0;
+
+// Serialize data for client-side D3
+const graphData = JSON.stringify({ nodes, links });
+---
+
+{hasConnections && (
+  <section class="connection-graph-section">
+    <h2 id="connections">Musical Connections</h2>
+
+    <div class="graph-controls">
+      <label class="filter-toggle">
+        <input type="checkbox" data-filter="collaborator" checked />
+        <span class="filter-label collaborator">Collaborators</span>
+      </label>
+      <label class="filter-toggle">
+        <input type="checkbox" data-filter="influenced" checked />
+        <span class="filter-label influenced">Influenced</span>
+      </label>
+      <label class="filter-toggle">
+        <input type="checkbox" data-filter="mentor" checked />
+        <span class="filter-label mentor">Mentors</span>
+      </label>
+      <label class="filter-toggle">
+        <input type="checkbox" data-filter="reverse" checked />
+        <span class="filter-label reverse">Reverse Links</span>
+      </label>
+    </div>
+
+    <div class="graph-container" id="connection-graph">
+      <svg></svg>
+    </div>
+
+    <div class="graph-legend">
+      <div class="legend-item">
+        <span class="legend-dot center"></span>
+        <span>Current Artist</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-dot collaborator"></span>
+        <span>Collaborators</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-dot influenced"></span>
+        <span>Influenced</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-dot mentor"></span>
+        <span>Mentors</span>
+      </div>
+    </div>
+  </section>
+)}
+
+<script define:vars={{ graphData, artistSlug }}>
+  // Store data for the D3 script
+  window.__connectionGraphData = JSON.parse(graphData);
+  window.__artistSlug = artistSlug;
+</script>
+
+<script type="module">
+  // Wrap in IIFE to allow early returns
+  (async () => {
+    // Load D3 from CDN
+    const d3 = await import('https://cdn.jsdelivr.net/npm/d3@7/+esm');
+
+    const data = window.__connectionGraphData;
+    const centerSlug = window.__artistSlug;
+
+    if (!data || data.links.length === 0) return;
+
+    const container = document.getElementById('connection-graph');
+    if (!container) return;
+
+    const svg = d3.select('#connection-graph svg');
+  const width = container.clientWidth || 600;
+  const height = 400;
+
+  svg.attr('width', width).attr('height', height).attr('viewBox', [0, 0, width, height]);
+
+  // Color scheme matching jazz club aesthetic
+  const colors = {
+    center: '#f59e0b',      // amber
+    collaborator: '#06b6d4', // cyan
+    influenced: '#a855f7',   // purple
+    mentor: '#eab308',       // yellow
+    collaboratedWith: '#06b6d4',
+    influencedBy: '#a855f7',
+    mentoredBy: '#eab308'
+  };
+
+  // Create force simulation
+  const simulation = d3.forceSimulation(data.nodes)
+    .force('link', d3.forceLink(data.links).id(d => d.id).distance(100))
+    .force('charge', d3.forceManyBody().strength(-200))
+    .force('center', d3.forceCenter(width / 2, height / 2))
+    .force('collision', d3.forceCollide().radius(30));
+
+  // Create container groups
+  const g = svg.append('g');
+
+  // Add zoom behavior
+  const zoom = d3.zoom()
+    .scaleExtent([0.5, 3])
+    .on('zoom', (event) => g.attr('transform', event.transform));
+
+  svg.call(zoom);
+
+  // Draw links
+  const link = g.append('g')
+    .attr('class', 'links')
+    .selectAll('line')
+    .data(data.links)
+    .join('line')
+    .attr('stroke', d => colors[d.type] || '#666')
+    .attr('stroke-opacity', 0.6)
+    .attr('stroke-width', 1.5)
+    .attr('data-type', d => d.type);
+
+  // Draw nodes
+  const node = g.append('g')
+    .attr('class', 'nodes')
+    .selectAll('g')
+    .data(data.nodes)
+    .join('g')
+    .attr('class', d => `node node-${d.type}`)
+    .attr('data-type', d => d.type)
+    .style('cursor', d => d.slug ? 'pointer' : 'default')
+    .call(d3.drag()
+      .on('start', dragstarted)
+      .on('drag', dragged)
+      .on('end', dragended));
+
+  // Add circles to nodes
+  node.append('circle')
+    .attr('r', d => d.type === 'center' ? 16 : 10)
+    .attr('fill', d => colors[d.type] || '#666')
+    .attr('stroke', '#1a1a2e')
+    .attr('stroke-width', 2);
+
+  // Add labels to nodes
+  node.append('text')
+    .text(d => d.name)
+    .attr('x', 0)
+    .attr('y', d => d.type === 'center' ? 28 : 22)
+    .attr('text-anchor', 'middle')
+    .attr('fill', 'var(--color-text)')
+    .attr('font-size', d => d.type === 'center' ? '12px' : '10px')
+    .attr('font-weight', d => d.type === 'center' ? '600' : '400');
+
+  // Click handler for navigation
+  node.on('click', (event, d) => {
+    if (d.slug && d.slug !== centerSlug) {
+      window.location.href = `/artists/${d.slug}`;
+    }
+  });
+
+  // Hover effects
+  node.on('mouseenter', function(event, d) {
+    d3.select(this).select('circle')
+      .transition()
+      .duration(150)
+      .attr('r', d.type === 'center' ? 20 : 14);
+  }).on('mouseleave', function(event, d) {
+    d3.select(this).select('circle')
+      .transition()
+      .duration(150)
+      .attr('r', d.type === 'center' ? 16 : 10);
+  });
+
+  // Simulation tick
+  simulation.on('tick', () => {
+    link
+      .attr('x1', d => d.source.x)
+      .attr('y1', d => d.source.y)
+      .attr('x2', d => d.target.x)
+      .attr('y2', d => d.target.y);
+
+    node.attr('transform', d => `translate(${d.x},${d.y})`);
+  });
+
+  // Drag functions
+  function dragstarted(event, d) {
+    if (!event.active) simulation.alphaTarget(0.3).restart();
+    d.fx = d.x;
+    d.fy = d.y;
+  }
+
+  function dragged(event, d) {
+    d.fx = event.x;
+    d.fy = event.y;
+  }
+
+  function dragended(event, d) {
+    if (!event.active) simulation.alphaTarget(0);
+    d.fx = null;
+    d.fy = null;
+  }
+
+  // Filter controls
+  const filters = document.querySelectorAll('.filter-toggle input');
+  const activeFilters = new Set(['collaborator', 'influenced', 'mentor', 'reverse']);
+
+  filters.forEach(filter => {
+    filter.addEventListener('change', (e) => {
+      const filterType = e.target.dataset.filter;
+
+      if (e.target.checked) {
+        activeFilters.add(filterType);
+      } else {
+        activeFilters.delete(filterType);
+      }
+
+      updateVisibility();
+    });
+  });
+
+  function updateVisibility() {
+    // Update node visibility
+    node.style('display', d => {
+      if (d.type === 'center') return 'block';
+
+      // Check if it's a reverse type
+      const isReverse = ['collaboratedWith', 'influencedBy', 'mentoredBy'].includes(d.type);
+      if (isReverse && !activeFilters.has('reverse')) return 'none';
+
+      // Check specific type
+      const baseType = d.type.replace('collaboratedWith', 'collaborator')
+                           .replace('influencedBy', 'influenced')
+                           .replace('mentoredBy', 'mentor');
+
+      return activeFilters.has(baseType) ? 'block' : 'none';
+    });
+
+    // Update link visibility
+    link.style('display', d => {
+      const isReverse = ['collaboratedWith', 'influencedBy', 'mentoredBy'].includes(d.type);
+      if (isReverse && !activeFilters.has('reverse')) return 'none';
+
+      const baseType = d.type.replace('collaboratedWith', 'collaborator')
+                           .replace('influencedBy', 'influenced')
+                           .replace('mentoredBy', 'mentor');
+
+      return activeFilters.has(baseType) ? 'block' : 'none';
+    });
+  }
+  })();
+</script>
+
+<style>
+  .connection-graph-section {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .connection-graph-section h2 {
+    font-family: 'Playfair Display Variable', Georgia, serif;
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--color-text-heading);
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0.25rem;
+  }
+
+  .graph-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .filter-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+  }
+
+  .filter-toggle input {
+    accent-color: var(--electric-cyan, #06b6d4);
+  }
+
+  .filter-label {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .filter-label.collaborator { background: rgba(6, 182, 212, 0.2); color: #06b6d4; }
+  .filter-label.influenced { background: rgba(168, 85, 247, 0.2); color: #a855f7; }
+  .filter-label.mentor { background: rgba(234, 179, 8, 0.2); color: #eab308; }
+  .filter-label.reverse { background: rgba(107, 114, 128, 0.2); color: var(--color-text-secondary); }
+
+  .graph-container {
+    width: 100%;
+    height: 400px;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md, 0.5rem);
+    overflow: hidden;
+  }
+
+  .graph-container svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .graph-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 0.75rem;
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  .legend-dot.center { background: #f59e0b; }
+  .legend-dot.collaborator { background: #06b6d4; }
+  .legend-dot.influenced { background: #a855f7; }
+  .legend-dot.mentor { background: #eab308; }
+
+  /* Mobile responsiveness */
+  @media (max-width: 640px) {
+    .graph-container {
+      height: 300px;
+    }
+
+    .graph-controls {
+      gap: 0.5rem;
+    }
+
+    .filter-toggle {
+      font-size: 0.75rem;
+    }
+  }
+</style>
