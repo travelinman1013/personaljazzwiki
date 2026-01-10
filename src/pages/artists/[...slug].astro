@@ -2,6 +2,9 @@
 import { getCollection } from 'astro:content';
 import WikiArticle from '../../layouts/WikiArticle.astro';
 import { marked } from 'marked';
+import ConnectionGraph from '../../components/artist/ConnectionGraph.astro';
+import WWOZPlays from '../../components/artist/WWOZPlays.astro';
+import connectionsIndex from '../../data/connections-index.json';
 
 export async function getStaticPaths() {
   const artists = await getCollection('artists');
@@ -118,10 +121,41 @@ while ((headingMatch = headingRegex.exec(htmlContent)) !== null) {
 
 // Get title with fallback
 const title = (data.title as string) || artist.id.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
+
+// Get connections for this artist
+const artistConnections = {
+  forward: (connectionsIndex as any).forward?.[artist.id] || {},
+  reverse: (connectionsIndex as any).reverse?.[artist.id] || {},
+};
+
+// Check if artist has any connections
+const hasConnections =
+  (artistConnections.forward?.collaborators?.length > 0) ||
+  (artistConnections.forward?.influenced?.length > 0) ||
+  (artistConnections.forward?.mentors?.length > 0) ||
+  (artistConnections.reverse?.collaboratedWith?.length > 0) ||
+  (artistConnections.reverse?.influencedBy?.length > 0) ||
+  (artistConnections.reverse?.mentoredBy?.length > 0);
+
+// Get name to slug mapping for connection graph navigation
+const nameToSlug = (connectionsIndex as any).nameToSlug || {};
 ---
 
 <WikiArticle title={title} data={data} headings={headings}>
   <Fragment set:html={htmlContent} />
+
+  {/* WWOZ Plays Section */}
+  <WWOZPlays artistSlug={artist.id} artistName={title} />
+
+  {/* Connection Graph - only if connections exist */}
+  {hasConnections && (
+    <ConnectionGraph
+      artistSlug={artist.id}
+      artistName={title}
+      connections={artistConnections}
+      nameToSlug={nameToSlug}
+    />
+  )}
 </WikiArticle>
 
 <style is:global>

@@ -1,0 +1,1380 @@
+{
+  "stats": {
+    "total": 3983,
+    "updated": 734,
+    "no_spotify_genres": 1169,
+    "unmatched": 9,
+    "errors": 0
+  },
+  "changes": [
+    {
+      "file": "2pac.md",
+      "old_genres": [
+        "old school hip hop",
+        "gangster rap",
+        "west coast hip hop",
+        "g-funk",
+        "hip hop"
+      ],
+      "new_genres": [
+        "gangster rap",
+        "west coast hip hop",
+        "g-funk",
+        "hip hop"
+      ]
+    },
+    {
+      "file": "5_royales.md",
+      "old_genres": [
+        "doo-wop",
+        "northern soul",
+        "roots rock"
+      ],
+      "new_genres": [
+        "doo-wop",
+        "northern soul"
+      ]
+    },
+    {
+      "file": "A_Tribe_Called_Quest.md",
+      "old_genres": [
+        "jazz rap",
+        "east coast hip hop",
+        "hip hop",
+        "old school hip hop"
+      ],
+      "new_genres": [
+        "jazz rap",
+        "east coast hip hop",
+        "hip hop"
+      ]
+    },
+    {
+      "file": "a_tribe_called_quest_spanky.md",
+      "old_genres": [
+        "jazz rap",
+        "east coast hip hop",
+        "hip hop",
+        "old school hip hop"
+      ],
+      "new_genres": [
+        "jazz rap",
+        "east coast hip hop",
+        "hip hop"
+      ]
+    },
+    {
+      "file": "al_green.md",
+      "old_genres": [
+        "soul",
+        "classic soul",
+        "motown",
+        "soul blues"
+      ],
+      "new_genres": [
+        "soul",
+        "motown",
+        "soul blues"
+      ]
+    },
+    {
+      "file": "al_jarreau.md",
+      "old_genres": [
+        "yacht rock",
+        "smooth jazz",
+        "vocal jazz",
+        "jazz"
+      ],
+      "new_genres": [
+        "smooth jazz",
+        "vocal jazz",
+        "jazz"
+      ]
+    },
+    {
+      "file": "albert_cummings.md",
+      "old_genres": [
+        "blues",
+        "blues rock",
+        "modern blues",
+        "jazz blues"
+      ],
+      "new_genres": [
+        "blues",
+        "blues rock",
+        "modern blues"
+      ]
+    },
+    {
+      "file": "alfonzo.md",
+      "old_genres": [
+        "corrido",
+        "sierreño",
+        "corridos bélicos"
+      ],
+      "new_genres": [
+        "corrido",
+        "corridos bélicos"
+      ]
+    },
+    {
+      "file": "alfredo_de_la_fe.md",
+      "old_genres": [
+        "salsa",
+        "latin jazz",
+        "son cubano",
+        "tropical music",
+        "timba"
+      ],
+      "new_genres": [
+        "salsa",
+        "latin jazz",
+        "son cubano",
+        "salsa romantica",
+        "tropical music"
+      ]
+    },
+    {
+      "file": "alien_sex_fiend.md",
+      "old_genres": [
+        "deathrock",
+        "gothic rock",
+        "post-punk",
+        "darkwave",
+        "cold wave",
+        "industrial",
+        "gothic metal"
+      ],
+      "new_genres": [
+        "deathrock",
+        "post-punk",
+        "darkwave",
+        "cold wave",
+        "industrial",
+        "gothic metal"
+      ]
+    },
+    {
+      "file": "allison_russell.md",
+      "old_genres": [
+        "southern gothic",
+        "folk"
+      ],
+      "new_genres": [
+        "folk"
+      ]
+    },
+    {
+      "file": "allman_brothers_band.md",
+      "old_genres": [
+        "southern rock",
+        "classic rock",
+        "blues rock",
+        "country rock",
+        "jam band"
+      ],
+      "new_genres": [
+        "southern rock",
+        "classic rock",
+        "blues rock",
+        "country rock"
+      ]
+    },
+    {
+      "file": "amy_lavere.md",
+      "old_genres": [
+        "americana",
+        "southern gothic",
+        "alt country"
+      ],
+      "new_genres": [
+        "americana",
+        "alt country"
+      ]
+    },
+    {
+      "file": "anaadi.md",
+      "old_genres": [
+        "tamil pop"
+      ],
+      "new_genres": [
+        "devotional"
+      ]
+    },
+    {
+      "file": "anaiis.md",
+      "old_genres": [
+        "alternative r&b",
+        "uk r&b"
+      ],
+      "new_genres": [
+        "alternative r&b"
+      ]
+    },
+    {
+      "file": "andre_previn_shelly_manne_red_mitchell.md",
+      "old_genres": [
+        "classical",
+        "orchestral"
+      ],
+      "new_genres": [
+        "classical",
+        "orchestra"
+      ]
+    },
+    {
+      "file": "anita_baker.md",
+      "old_genres": [
+        "quiet storm",
+        "smooth jazz",
+        "classic soul"
+      ],
+      "new_genres": [
+        "quiet storm",
+        "smooth jazz",
+        "smooth soul"
+      ]
+    },
+    {
+      "file": "Ann_Peebles.md",
+      "old_genres": [
+        "soul",
+        "soul blues",
+        "classic soul"
+      ],
+      "new_genres": [
+        "soul",
+        "soul blues"
+      ]
+    },
+    {
+      "file": "antibalas.md",
+      "old_genres": [
+        "afrobeat",
+        "latin afrobeats",
+        "afro soul"
+      ],
+      "new_genres": [
+        "afrobeat",
+        "latin afrobeat",
+        "afro soul"
+      ]
+    },
+    {
+      "file": "arathejay.md",
+      "old_genres": [
+        "ghanaian hip hop",
+        "asakaa",
+        "hiplife",
+        "alté",
+        "afro adura",
+        "afrobeats",
+        "afrobeat",
+        "afropop",
+        "afroswing",
+        "afro soul"
+      ],
+      "new_genres": [
+        "asakaa",
+        "hiplife",
+        "alté",
+        "afrobeats",
+        "afroswing",
+        "afro soul",
+        "afrobeat",
+        "afropop"
+      ]
+    },
+    {
+      "file": "archie_shepp_quartet.md",
+      "old_genres": [
+        "jazz ballads",
+        "free jazz",
+        "gnawa",
+        "jazz"
+      ],
+      "new_genres": [
+        "free jazz",
+        "gnawa",
+        "jazz",
+        "hard bop"
+      ]
+    },
+    {
+      "file": "Aretha_Franklin.md",
+      "old_genres": [
+        "soul",
+        "motown",
+        "classic soul",
+        "jazz blues"
+      ],
+      "new_genres": [
+        "soul",
+        "motown",
+        "jazz blues"
+      ]
+    },
+    {
+      "file": "Arnett_Cobb.md",
+      "old_genres": [
+        "hard bop",
+        "jazz blues",
+        "jazz",
+        "acid jazz",
+        "bebop"
+      ],
+      "new_genres": [
+        "hard bop",
+        "jazz blues",
+        "jazz",
+        "acid jazz",
+        "soul jazz"
+      ]
+    },
+    {
+      "file": "arthur_conley.md",
+      "old_genres": [
+        "northern soul",
+        "motown",
+        "classic soul",
+        "soul"
+      ],
+      "new_genres": [
+        "northern soul",
+        "motown",
+        "soul"
+      ]
+    },
+    {
+      "file": "asake.md",
+      "old_genres": [
+        "afrobeats",
+        "afrobeat",
+        "afropiano",
+        "afro adura",
+        "afropop",
+        "amapiano",
+        "afroswing",
+        "afro r&b"
+      ],
+      "new_genres": [
+        "afrobeats",
+        "afrobeat",
+        "afropiano",
+        "afro adura",
+        "afropop",
+        "amapiano",
+        "afroswing"
+      ]
+    },
+    {
+      "file": "asleep_at_the_wheel.md",
+      "old_genres": [
+        "classic country",
+        "traditional country",
+        "texas country",
+        "honky tonk"
+      ],
+      "new_genres": [
+        "traditional country",
+        "honky tonk"
+      ]
+    },
+    {
+      "file": "audrey_coppard.md",
+      "old_genres": [
+        "traditional folk",
+        "folk"
+      ],
+      "new_genres": [
+        "folk"
+      ]
+    },
+    {
+      "file": "Aurra.md",
+      "old_genres": [
+        "post-disco",
+        "boogie",
+        "funk"
+      ],
+      "new_genres": [
+        "post-disco",
+        "boogie"
+      ]
+    },
+    {
+      "file": "ayisi.md",
+      "old_genres": [
+        "ghanaian hip hop",
+        "hiplife",
+        "asakaa",
+        "highlife",
+        "alté",
+        "afrobeats",
+        "azonto",
+        "afropop"
+      ],
+      "new_genres": [
+        "hiplife",
+        "asakaa",
+        "highlife",
+        "afrobeats",
+        "alté",
+        "azonto",
+        "afropop",
+        "afrobeat"
+      ]
+    },
+    {
+      "file": "bambo_de_bambu.md",
+      "old_genres": [
+        "retro soul",
+        "jazz blues",
+        "funk",
+        "acid jazz",
+        "jazz funk"
+      ],
+      "new_genres": [
+        "jazz blues",
+        "retro soul",
+        "jazz funk",
+        "acid jazz"
+      ]
+    },
+    {
+      "file": "barbara_dane.md",
+      "old_genres": [
+        "folk",
+        "traditional folk"
+      ],
+      "new_genres": [
+        "folk"
+      ]
+    },
+    {
+      "file": "barry_white.md",
+      "old_genres": [
+        "disco",
+        "soul",
+        "classic soul",
+        "quiet storm",
+        "philly soul"
+      ],
+      "new_genres": [
+        "disco",
+        "soul",
+        "quiet storm",
+        "philly soul"
+      ]
+    },
+    {
+      "file": "bas_clas.md",
+      "old_genres": [
+        "electroclash",
+        "witch house",
+        "hyperpop"
+      ],
+      "new_genres": [
+        "electroclash",
+        "witch house"
+      ]
+    },
+    {
+      "file": "bbc_big_band.md",
+      "old_genres": [
+        "big band",
+        "swing music",
+        "boogie-woogie"
+      ],
+      "new_genres": [
+        "big band",
+        "swing music"
+      ]
+    },
+    {
+      "file": "bela_fleck_and_the_flecktones.md",
+      "old_genres": [
+        "newgrass",
+        "bluegrass",
+        "jazz fusion",
+        "jam band"
+      ],
+      "new_genres": [
+        "newgrass",
+        "bluegrass",
+        "jazz fusion"
+      ]
+    },
+    {
+      "file": "bella_shmurda.md",
+      "old_genres": [
+        "afro adura",
+        "afrobeats",
+        "afrobeat",
+        "alté",
+        "afropop",
+        "afropiano",
+        "nigerian drill",
+        "afro soul",
+        "fújì"
+      ],
+      "new_genres": [
+        "afro adura",
+        "afrobeats",
+        "afrobeat",
+        "afropop",
+        "alté",
+        "afropiano",
+        "afro soul"
+      ]
+    },
+    {
+      "file": "bella_shmurda_and_fola.md",
+      "old_genres": [
+        "afro adura",
+        "afrobeats",
+        "afrobeat",
+        "afropop",
+        "alté",
+        "afropiano",
+        "nigerian drill",
+        "fújì",
+        "afro soul"
+      ],
+      "new_genres": [
+        "afro adura",
+        "afrobeats",
+        "afrobeat",
+        "afropop",
+        "alté",
+        "afropiano",
+        "afro soul"
+      ]
+    },
+    {
+      "file": "ben_sidran.md",
+      "old_genres": [
+        "vocal jazz",
+        "aor"
+      ],
+      "new_genres": [
+        "vocal jazz",
+        "album rock"
+      ]
+    },
+    {
+      "file": "Benjamin_Koppel_Scott_Colley_Brian_Blade.md",
+      "old_genres": [
+        "dansk pop",
+        "dansktop"
+      ],
+      "new_genres": [
+        "dansktop"
+      ]
+    },
+    {
+      "file": "benny_grunch_and_the_bunch.md",
+      "old_genres": [
+        "cajun",
+        "christmas"
+      ],
+      "new_genres": [
+        "christmas"
+      ]
+    },
+    {
+      "file": "bertha_idaho.md",
+      "old_genres": [
+        "classic blues"
+      ],
+      "new_genres": [
+        "classic blues",
+        "ragtime"
+      ]
+    },
+    {
+      "file": "betty_davis.md",
+      "old_genres": [
+        "funk rock",
+        "funk"
+      ],
+      "new_genres": [
+        "funk rock"
+      ]
+    },
+    {
+      "file": "betty_wright.md",
+      "old_genres": [
+        "classic soul",
+        "soul"
+      ],
+      "new_genres": [
+        "soul"
+      ]
+    },
+    {
+      "file": "bettye_swann.md",
+      "old_genres": [
+        "northern soul",
+        "soul",
+        "classic soul"
+      ],
+      "new_genres": [
+        "northern soul",
+        "soul"
+      ]
+    },
+    {
+      "file": "big_chenier.md",
+      "old_genres": [
+        "cajun",
+        "footwork",
+        "zydeco"
+      ],
+      "new_genres": [
+        "footwork"
+      ]
+    },
+    {
+      "file": "big_chief_alfred_doucette.md",
+      "old_genres": [
+        "cajun",
+        "zydeco",
+        "soul blues"
+      ],
+      "new_genres": [
+        "soul blues"
+      ]
+    },
+    {
+      "file": "big_chief_ellis.md",
+      "old_genres": [
+        "classic blues",
+        "blues",
+        "country blues"
+      ],
+      "new_genres": [
+        "blues",
+        "classic blues"
+      ]
+    },
+    {
+      "file": "Big_Freedia.md",
+      "old_genres": [
+        "new orleans bounce",
+        "bounce",
+        "ballroom vogue"
+      ],
+      "new_genres": [
+        "bounce"
+      ]
+    },
+    {
+      "file": "big_joe_turner.md",
+      "old_genres": [
+        "boogie-woogie",
+        "blues",
+        "rockabilly",
+        "classic blues",
+        "swing music",
+        "roots rock",
+        "boogie",
+        "doo-wop"
+      ],
+      "new_genres": [
+        "boogie-woogie",
+        "doo-wop",
+        "blues",
+        "classic blues",
+        "rockabilly"
+      ]
+    },
+    {
+      "file": "big_mama_thornton.md",
+      "old_genres": [
+        "blues",
+        "classic blues",
+        "soul blues"
+      ],
+      "new_genres": [
+        "blues",
+        "classic blues"
+      ]
+    },
+    {
+      "file": "big_sams_funky_nation.md",
+      "old_genres": [
+        "jazz funk",
+        "funk",
+        "cajun"
+      ],
+      "new_genres": [
+        "jazz funk"
+      ]
+    },
+    {
+      "file": "big_tyme.md",
+      "old_genres": [
+        "southern hip hop",
+        "crunk",
+        "new orleans bounce"
+      ],
+      "new_genres": [
+        "southern hip hop",
+        "crunk"
+      ]
+    },
+    {
+      "file": "bill_bruford.md",
+      "old_genres": [
+        "jazz fusion",
+        "progressive rock"
+      ],
+      "new_genres": [
+        "jazz fusion",
+        "progressive rock",
+        "symphonic rock"
+      ]
+    },
+    {
+      "file": "bill_henderson_with_oscar_peterson.md",
+      "old_genres": [
+        "jazz",
+        "cool jazz",
+        "jazz ballads",
+        "bebop",
+        "hard bop"
+      ],
+      "new_genres": [
+        "jazz",
+        "cool jazz",
+        "bebop",
+        "hard bop"
+      ]
+    },
+    {
+      "file": "BILL_MONROE.md",
+      "old_genres": [
+        "bluegrass",
+        "christian country",
+        "traditional country",
+        "newgrass",
+        "southern gospel",
+        "classic country"
+      ],
+      "new_genres": [
+        "bluegrass",
+        "christian country",
+        "traditional country",
+        "newgrass",
+        "southern gospel"
+      ]
+    },
+    {
+      "file": "bill_withers.md",
+      "old_genres": [
+        "soul",
+        "classic soul",
+        "motown"
+      ],
+      "new_genres": [
+        "soul",
+        "motown"
+      ]
+    },
+    {
+      "file": "billy_bragg.md",
+      "old_genres": [
+        "alt country",
+        "anti-folk",
+        "folk punk",
+        "singer-songwriter",
+        "americana"
+      ],
+      "new_genres": [
+        "alt country",
+        "folk punk",
+        "singer-songwriter",
+        "americana"
+      ]
+    },
+    {
+      "file": "billy_branch_and_the_sons_of_blues.md",
+      "old_genres": [
+        "blues",
+        "jazz blues",
+        "classic blues",
+        "modern blues"
+      ],
+      "new_genres": [
+        "blues",
+        "jazz blues",
+        "modern blues"
+      ]
+    },
+    {
+      "file": "billy_joe_shaver.md",
+      "old_genres": [
+        "outlaw country",
+        "honky tonk",
+        "texas country",
+        "classic country",
+        "americana",
+        "red dirt",
+        "alt country"
+      ],
+      "new_genres": [
+        "honky tonk",
+        "texas country",
+        "americana",
+        "red dirt",
+        "alt country"
+      ]
+    },
+    {
+      "file": "Billy_Paul.md",
+      "old_genres": [
+        "philly soul",
+        "classic soul",
+        "soul",
+        "motown"
+      ],
+      "new_genres": [
+        "philly soul",
+        "soul",
+        "motown"
+      ]
+    },
+    {
+      "file": "birdcloud.md",
+      "old_genres": [
+        "folk punk",
+        "anti-folk"
+      ],
+      "new_genres": [
+        "folk punk"
+      ]
+    },
+    {
+      "file": "black_crowes.md",
+      "old_genres": [
+        "southern rock",
+        "jam band",
+        "rock"
+      ],
+      "new_genres": [
+        "southern rock",
+        "rock"
+      ]
+    },
+    {
+      "file": "black_heat.md",
+      "old_genres": [
+        "go-go",
+        "funk",
+        "breakbeat",
+        "jazz funk"
+      ],
+      "new_genres": [
+        "go-go",
+        "breakbeat"
+      ]
+    },
+    {
+      "file": "black_sherif.md",
+      "old_genres": [
+        "asakaa",
+        "ghanaian hip hop",
+        "hiplife",
+        "afrobeats",
+        "afrobeat",
+        "afropop",
+        "afro adura",
+        "afropiano"
+      ],
+      "new_genres": [
+        "asakaa",
+        "hiplife",
+        "afrobeats",
+        "afrobeat",
+        "afropop",
+        "afropiano"
+      ]
+    },
+    {
+      "file": "black_sherif_and_seyi_vibes.md",
+      "old_genres": [
+        "asakaa",
+        "ghanaian hip hop",
+        "hiplife",
+        "afrobeats",
+        "afrobeat",
+        "afropop",
+        "afro adura",
+        "afropiano"
+      ],
+      "new_genres": [
+        "asakaa",
+        "hiplife",
+        "afrobeats",
+        "afrobeat",
+        "afropop",
+        "afropiano"
+      ]
+    },
+    {
+      "file": "blaze_foley.md",
+      "old_genres": [
+        "folk",
+        "outlaw country",
+        "americana",
+        "singer-songwriter",
+        "alt country"
+      ],
+      "new_genres": [
+        "folk",
+        "americana",
+        "singer-songwriter",
+        "alt country"
+      ]
+    },
+    {
+      "file": "bob_wilbur_jim_cullum.md",
+      "old_genres": [
+        "christian jazz",
+        "boogie-woogie",
+        "ragtime"
+      ],
+      "new_genres": [
+        "boogie-woogie",
+        "ragtime"
+      ]
+    },
+    {
+      "file": "bobby_bare.md",
+      "old_genres": [
+        "classic country",
+        "outlaw country",
+        "traditional country"
+      ],
+      "new_genres": [
+        "traditional country"
+      ]
+    },
+    {
+      "file": "Bobby_BLAnd.md",
+      "old_genres": [
+        "blues",
+        "soul blues",
+        "classic blues",
+        "soul",
+        "classic soul"
+      ],
+      "new_genres": [
+        "blues",
+        "soul blues",
+        "classic blues",
+        "soul"
+      ]
+    },
+    {
+      "file": "Bobby_Blue_Bland.md",
+      "old_genres": [
+        "blues",
+        "soul blues",
+        "classic blues",
+        "soul",
+        "classic soul"
+      ],
+      "new_genres": [
+        "blues",
+        "soul blues",
+        "classic blues",
+        "soul"
+      ]
+    },
+    {
+      "file": "Bobby_Thurston.md",
+      "old_genres": [
+        "post-disco",
+        "disco",
+        "funk"
+      ],
+      "new_genres": [
+        "post-disco",
+        "disco"
+      ]
+    },
+    {
+      "file": "bobby_watson.md",
+      "old_genres": [
+        "jazz",
+        "hard bop"
+      ],
+      "new_genres": [
+        "jazz"
+      ]
+    },
+    {
+      "file": "BOBBY_WOMACK.md",
+      "old_genres": [
+        "soul",
+        "classic soul"
+      ],
+      "new_genres": [
+        "soul"
+      ]
+    },
+    {
+      "file": "bobby_womak.md",
+      "old_genres": [
+        "soul",
+        "classic soul"
+      ],
+      "new_genres": [
+        "soul"
+      ]
+    },
+    {
+      "file": "bogus_ben_covington.md",
+      "old_genres": [
+        "country blues",
+        "traditional country"
+      ],
+      "new_genres": [
+        "country blues",
+        "classic blues"
+      ]
+    },
+    {
+      "file": "boukman_eksperyans.md",
+      "old_genres": [
+        "kompa",
+        "afro house"
+      ],
+      "new_genres": [
+        "afro house"
+      ]
+    },
+    {
+      "file": "boyd_rivers.md",
+      "old_genres": [
+        "country blues",
+        "southern gothic",
+        "blues"
+      ],
+      "new_genres": [
+        "country blues",
+        "blues"
+      ]
+    },
+    {
+      "file": "boyfriend_big_freedia.md",
+      "old_genres": [
+        "new orleans bounce",
+        "bounce",
+        "ballroom vogue"
+      ],
+      "new_genres": [
+        "bounce"
+      ]
+    },
+    {
+      "file": "boz_scaggs.md",
+      "old_genres": [
+        "yacht rock",
+        "aor"
+      ],
+      "new_genres": [
+        "album rock"
+      ]
+    },
+    {
+      "file": "Brad_Mehldau.md",
+      "old_genres": [
+        "jazz",
+        "cool jazz"
+      ],
+      "new_genres": [
+        "jazz"
+      ]
+    },
+    {
+      "file": "Brennen_Leigh.md",
+      "old_genres": [
+        "americana",
+        "honky tonk",
+        "bluegrass",
+        "alt country"
+      ],
+      "new_genres": [
+        "americana",
+        "honky tonk",
+        "bluegrass"
+      ]
+    },
+    {
+      "file": "Brian_Eno.md",
+      "old_genres": [
+        "ambient",
+        "art rock",
+        "krautrock",
+        "minimalism",
+        "drone",
+        "glam rock",
+        "space music"
+      ],
+      "new_genres": [
+        "ambient",
+        "art rock",
+        "krautrock",
+        "minimalism",
+        "drone",
+        "glam rock"
+      ]
+    },
+    {
+      "file": "bright_light_quartet.md",
+      "old_genres": [
+        "traditional folk",
+        "country blues",
+        "classic blues"
+      ],
+      "new_genres": [
+        "country blues",
+        "classic blues"
+      ]
+    },
+    {
+      "file": "broadcast.md",
+      "old_genres": [
+        "dream pop",
+        "neo-psychedelic",
+        "shoegaze"
+      ],
+      "new_genres": [
+        "dream pop",
+        "shoegaze"
+      ]
+    },
+    {
+      "file": "brother_dege.md",
+      "old_genres": [
+        "southern gothic",
+        "country blues"
+      ],
+      "new_genres": [
+        "gothic country",
+        "country blues"
+      ]
+    },
+    {
+      "file": "buck_owens.md",
+      "old_genres": [
+        "classic country",
+        "honky tonk",
+        "traditional country",
+        "outlaw country",
+        "country"
+      ],
+      "new_genres": [
+        "honky tonk",
+        "traditional country",
+        "country"
+      ]
+    },
+    {
+      "file": "Bud_Shank.md",
+      "old_genres": [
+        "cool jazz",
+        "jazz",
+        "brazilian jazz",
+        "bossa nova",
+        "hard bop"
+      ],
+      "new_genres": [
+        "cool jazz",
+        "jazz",
+        "brazilian jazz",
+        "bossa nova"
+      ]
+    },
+    {
+      "file": "buddy_ace.md",
+      "old_genres": [
+        "soul blues",
+        "northern soul",
+        "blues",
+        "zydeco"
+      ],
+      "new_genres": [
+        "soul blues",
+        "northern soul",
+        "blues"
+      ]
+    },
+    {
+      "file": "Buddy_Guy.md",
+      "old_genres": [
+        "blues",
+        "classic blues",
+        "blues rock",
+        "modern blues",
+        "soul blues",
+        "country blues",
+        "jazz blues"
+      ],
+      "new_genres": [
+        "blues",
+        "classic blues",
+        "blues rock",
+        "soul blues",
+        "modern blues",
+        "country blues"
+      ]
+    },
+    {
+      "file": "buddy_guy_wchristone.md",
+      "old_genres": [
+        "blues",
+        "classic blues",
+        "blues rock",
+        "modern blues",
+        "soul blues",
+        "country blues",
+        "jazz blues"
+      ],
+      "new_genres": [
+        "blues",
+        "classic blues",
+        "blues rock",
+        "soul blues",
+        "modern blues",
+        "country blues"
+      ]
+    },
+    {
+      "file": "budos_band.md",
+      "old_genres": [
+        "afrobeat",
+        "jazz funk",
+        "funk",
+        "retro soul"
+      ],
+      "new_genres": [
+        "afrobeat",
+        "jazz funk",
+        "afro soul",
+        "retro soul"
+      ]
+    },
+    {
+      "file": "Butcher_Brown.md",
+      "old_genres": [
+        "nu jazz",
+        "jazz fusion",
+        "indie jazz",
+        "jazz funk"
+      ],
+      "new_genres": [
+        "nu jazz",
+        "indie jazz",
+        "jazz funk"
+      ]
+    },
+    {
+      "file": "Caju_e_Castanha.md",
+      "old_genres": [
+        "forró",
+        "traditional forró",
+        "brega"
+      ],
+      "new_genres": [
+        "forro tradicional",
+        "forró",
+        "brega"
+      ]
+    },
+    {
+      "file": "carey_bell.md",
+      "old_genres": [
+        "blues",
+        "classic blues",
+        "modern blues",
+        "blues rock"
+      ],
+      "new_genres": [
+        "blues",
+        "classic blues",
+        "modern blues"
+      ]
+    },
+    {
+      "file": "carla_thomas.md",
+      "old_genres": [
+        "soul",
+        "classic soul",
+        "motown",
+        "northern soul"
+      ],
+      "new_genres": [
+        "soul",
+        "motown",
+        "northern soul"
+      ]
+    },
+    {
+      "file": "carlo_ditta.md",
+      "old_genres": [],
+      "new_genres": [
+        "retro soul",
+        "blues rock"
+      ]
+    },
+    {
+      "file": "carlos_miyares.md",
+      "old_genres": [
+        "latin jazz",
+        "timba"
+      ],
+      "new_genres": [
+        "latin jazz"
+      ]
+    },
+    {
+      "file": "cary_morin.md",
+      "old_genres": [
+        "blues",
+        "native american music"
+      ],
+      "new_genres": [
+        "blues"
+      ]
+    },
+    {
+      "file": "catherine_henderson.md",
+      "old_genres": [
+        "ragtime"
+      ],
+      "new_genres": [
+        "ragtime",
+        "jazz blues"
+      ]
+    },
+    {
+      "file": "cecile_mclorin_salvant.md",
+      "old_genres": [
+        "vocal jazz",
+        "french jazz",
+        "jazz",
+        "jazz pop"
+      ],
+      "new_genres": [
+        "vocal jazz",
+        "french jazz",
+        "jazz"
+      ]
+    }
+  ],
+  "total_changes": 734
+}
