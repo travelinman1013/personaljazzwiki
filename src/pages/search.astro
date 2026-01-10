@@ -121,34 +121,26 @@ import Layout from '../layouts/Layout.astro';
   // Pagefind is generated after build, so we need to load it dynamically at runtime
   async function loadPagefind() {
     try {
-      // Use variable to prevent Vite from analyzing the import path
+      // Dynamic path prevents Vite static analysis
       const pagefindPath = '/pagefind/pagefind-ui.js';
-      // Dynamically import the Pagefind UI script
-      const pagefindModule = await import(/* @vite-ignore */ pagefindPath);
-      const PagefindUI = pagefindModule.PagefindUI || pagefindModule.default?.PagefindUI;
-
-      if (PagefindUI) {
-        new PagefindUI({
-          element: '#search',
-          showSubResults: true,
-          showImages: false,
-          excerptLength: 20,
-          resetStyles: false,
-          translations: {
-            placeholder: 'Search artists, genres, instruments...',
-            zero_results: 'No artists found for "[SEARCH_TERM]"',
-            many_results: '[COUNT] artists found',
-            one_result: '[COUNT] artist found',
-            searching: 'Searching...'
-          }
-        });
-      } else {
-        console.error('PagefindUI not found in module');
-        document.getElementById('search').innerHTML = '<p class="text-wiki-text-muted">Search is being built. Please try again in a moment.</p>';
-      }
-    } catch (error) {
-      console.error('Failed to load Pagefind:', error);
-      document.getElementById('search').innerHTML = '<p class="text-wiki-text-muted">Search is currently unavailable. The search index may still be building.</p>';
+      const PagefindUI = await import(pagefindPath);
+      new PagefindUI.PagefindUI({
+        element: '#search',
+        showSubResults: true,
+        showImages: false,
+        excerptLength: 20,
+        resetStyles: false,
+        translations: {
+          placeholder: 'Search artists, genres, instruments...',
+          zero_results: 'No artists found for "[SEARCH_TERM]"',
+          many_results: '[COUNT] artists found',
+          one_result: '[COUNT] artist found',
+          searching: 'Searching...'
+        }
+      });
+    } catch {
+      document.getElementById('search').innerHTML =
+        '<p class="text-wiki-text-muted">Search available after build (npm run build)</p>';
     }
   }
 

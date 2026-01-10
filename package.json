@@ -9,7 +9,8 @@
     "preview": "astro preview",
     "astro": "astro",
     "sync": "./scripts/sync-content.sh && ./scripts/sync-wwoz.sh",
-    "build:prod": "npm run sync && npm run build && npm run postbuild",
+    "insights": "npx tsx scripts/compute-wwoz-insights.ts",
+    "build:prod": "npm run sync && npm run insights && npm run build && npm run postbuild",
     "postbuild": "npx pagefind --site dist"
   },
   "dependencies": {

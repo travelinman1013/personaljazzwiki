@@ -1,99 +1,25 @@
 ---
 /**
  * WWOZ Insights Dashboard
- * Aggregates statistics from all WWOZ daily logs
+ * Pre-computed statistics from all WWOZ daily logs
  * Shows top artists, genres, shows, and trends
  */
 import Layout from '../../layouts/Layout.astro';
-import { getCollection } from 'astro:content';
-import { ArtistMatcher, toArtistSlug } from '../../lib/artist-matcher';
+import insightsData from '../../data/wwoz-insights.json';
 
-// Load collections
-const wwozLogs = await getCollection('wwoz');
-const artists = await getCollection('artists');
+// Extract pre-computed data
+const { summary, topArtists, topGenres, topShows } = insightsData;
 
-// Create artist matcher for linking to wiki profiles
-const artistEntries = artists.map(a => ({
-  id: a.id,
-  name: a.data.title ?? a.id
-}));
-const matcher = new ArtistMatcher(artistEntries);
-
-// Aggregate artist plays
-const artistPlays = new Map<string, { name: string; slug?: string; count: number }>();
-
-// Aggregate genre counts
-const genreCounts = new Map<string, number>();
-
-// Aggregate show counts
-const showCounts = new Map<string, { name: string; trackCount: number }>();
-
-// Track daily stats
-let totalTracks = 0;
-let totalFound = 0;
-let totalNotFound = 0;
-
-// Process all logs
-for (const log of wwozLogs) {
-  const tracks = log.data.tracks || [];
-  const stats = log.data.stats;
-
-  // Accumulate daily stats
-  if (stats) {
-    totalTracks += stats.totalTracks;
-    totalFound += stats.successfullyFound;
-    totalNotFound += stats.notFound;
-  }
-
-  for (const track of tracks) {
-    // Artist aggregation
-    const key = track.artist.toLowerCase();
-    if (!artistPlays.has(key)) {
-      const match = matcher.match(track.artist);
-      artistPlays.set(key, {
-        name: track.artist,
-        slug: match?.artist.id,
-        count: 0
-      });
-    }
-    artistPlays.get(key)!.count++;
-
-    // Genre aggregation
-    for (const genre of track.genres) {
-      genreCounts.set(genre, (genreCounts.get(genre) || 0) + 1);
-    }
-
-    // Show aggregation
-    const showKey = track.show.toLowerCase();
-    if (!showCounts.has(showKey)) {
-      showCounts.set(showKey, { name: track.show, trackCount: 0 });
-    }
-    showCounts.get(showKey)!.trackCount++;
-  }
-}
-
-// Sort and slice for display
-const topArtists = Array.from(artistPlays.values())
-  .sort((a, b) => b.count - a.count)
-  .slice(0, 20);
-
-const topGenres = Array.from(genreCounts.entries())
-  .sort((a, b) => b[1] - a[1])
-  .slice(0, 15);
-
-const topShows = Array.from(showCounts.values())
-  .sort((a, b) => b.trackCount - a.trackCount)
-  .slice(0, 10);
+// Calculate stats from summary
+const daysTracked = summary.totalDays;
+const totalTracks = summary.totalTracks;
+const uniqueArtists = summary.uniqueArtists;
+const uniqueGenres = topGenres.length; // Total unique genres in the data
+const matchRate = totalTracks > 0 ? ((summary.matchedTracks / totalTracks) * 100).toFixed(1) : '0';
 
 // Calculate max for bar chart scaling
 const maxArtistPlays = topArtists.length > 0 ? topArtists[0].count : 1;
-const maxGenreCount = topGenres.length > 0 ? topGenres[0][1] : 1;
-
-// Stats
-const daysTracked = wwozLogs.length;
-const uniqueArtists = artistPlays.size;
-const uniqueGenres = genreCounts.size;
-const matchRate = totalTracks > 0 ? ((totalFound / totalTracks) * 100).toFixed(1) : '0';
+const maxGenreCount = topGenres.length > 0 ? topGenres[0].count : 1;
 
 // Helper to create genre slug
 const toGenreSlug = (genre: string) =>
@@ -193,17 +119,17 @@ const toGenreSlug = (genre: string) =>
       </p>
 
       <div class="genre-cloud">
-        {topGenres.map(([genre, count]) => {
+        {topGenres.map((genre) => {
           // Scale font size based on count
-          const scale = 0.8 + (count / maxGenreCount) * 0.6;
+          const scale = 0.8 + (genre.count / maxGenreCount) * 0.6;
           return (
             <a
-              href={`/genres/${toGenreSlug(genre)}`}
+              href={`/genres/${toGenreSlug(genre.name)}`}
               class="genre-tag"
               style={`font-size: ${scale}rem`}
             >
-              {genre}
-              <span class="genre-count">{count}</span>
+              {genre.name}
+              <span class="genre-count">{genre.count}</span>
             </a>
           );
         })}

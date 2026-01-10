@@ -184,7 +184,7 @@ function parseWWOZTracks(content: string): WWOZTrack[] {
       genres,
       show,
       host: host && host !== '-' ? host : undefined,
-      status: status.includes('Found') ? 'found' : 'not_found',
+      status: status.includes('✅') ? 'found' : 'not_found',
       confidence,
       spotifyUrl,
     });

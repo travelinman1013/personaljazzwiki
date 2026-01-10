@@ -458,14 +458,21 @@
     }
 
     private async loadPagefind() {
+      if (this.pagefind) return;
       try {
-        // Use variable to prevent Vite from analyzing the import path
-        const pagefindPath = '/pagefind/pagefind.js';
-        // @ts-ignore - Pagefind is loaded dynamically after build
-        this.pagefind = await import(/* @vite-ignore */ pagefindPath);
+        // Check if pagefind exists before attempting import
+        const checkResponse = await fetch('/pagefind/pagefind.js', { method: 'HEAD' });
+        if (!checkResponse.ok) {
+          console.debug('Search requires build: run npm run build first');
+          return;
+        }
+        // Use Function constructor to create dynamic import (bypasses Vite)
+        const dynamicImport = new Function('path', 'return import(path)');
+        this.pagefind = await dynamicImport('/pagefind/pagefind.js');
         await this.pagefind.init();
-      } catch (e) {
-        console.warn('Pagefind not available (run build first for search)');
+      } catch {
+        // Pagefind not available in dev mode
+        console.debug('Search requires build: run npm run build first');
       }
     }
 
