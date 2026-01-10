@@ -1,8 +1,10 @@
-# PersonalJazzWiki Deployment Guide
+# Jazzapedia Deployment Guide
 
-This document explains how to deploy the PersonalJazzWiki to Cloudflare Pages.
+This document explains how to deploy Jazzapedia to Cloudflare Pages.
 
-**GitHub Repo:** https://github.com/travelinman1013/personaljazzwiki
+**Live Site:** https://jazzapedia.com
+
+**GitHub Repo:** https://github.com/travelinman1013/jazzapedia
 
 ## Current Status
 
@@ -19,8 +21,8 @@ This document explains how to deploy the PersonalJazzWiki to Cloudflare Pages.
 #    - API Token: My Profile > API Tokens > Create Token > "Edit Cloudflare Workers"
 
 # 2. Add secrets to GitHub
-gh secret set CLOUDFLARE_API_TOKEN --repo travelinman1013/personaljazzwiki
-gh secret set CLOUDFLARE_ACCOUNT_ID --repo travelinman1013/personaljazzwiki
+gh secret set CLOUDFLARE_API_TOKEN --repo travelinman1013/jazzapedia
+gh secret set CLOUDFLARE_ACCOUNT_ID --repo travelinman1013/jazzapedia
 
 # 3. Sync your artist content
 cd /Users/maxwell/LETSGO/MaxVault/01_Projects/PersonalArtistWiki/web
@@ -32,10 +34,10 @@ git commit -m "Add content for deployment"
 git push
 
 # 5. Check deployment status
-gh run watch --repo travelinman1013/personaljazzwiki
+gh run watch --repo travelinman1013/jazzapedia
 ```
 
-Your site will be live at: `https://personaljazzwiki.pages.dev`
+Your site will be live at: `https://jazzapedia.com`
 
 ---
 
@@ -77,7 +79,7 @@ For a quick deployment without GitHub:
 
 2. **Deploy using Wrangler:**
    ```bash
-   npx wrangler pages deploy dist --project-name personal-artist-wiki
+   npx wrangler pages deploy dist --project-name jazzapedia
    ```
 
 ### Option 2: Automated GitHub Actions Deployment (Recommended)
@@ -86,12 +88,12 @@ For a quick deployment without GitHub:
 
 ```bash
 # From the web/ directory
-gh repo create personal-artist-wiki --private --source=. --push
+gh repo create jazzapedia --private --source=. --push
 ```
 
 Or manually:
 1. Create a new repository on GitHub
-2. Add remote: `git remote add origin https://github.com/YOUR_USERNAME/personal-artist-wiki.git`
+2. Add remote: `git remote add origin https://github.com/YOUR_USERNAME/jazzapedia.git`
 3. Push: `git push -u origin main`
 
 #### Step 2: Prepare Content for Deployment
@@ -125,15 +127,15 @@ git push
 
    Via CLI (easiest):
    ```bash
-   gh secret set CLOUDFLARE_API_TOKEN --repo travelinman1013/personaljazzwiki
+   gh secret set CLOUDFLARE_API_TOKEN --repo travelinman1013/jazzapedia
    # Paste your API token when prompted
 
-   gh secret set CLOUDFLARE_ACCOUNT_ID --repo travelinman1013/personaljazzwiki
+   gh secret set CLOUDFLARE_ACCOUNT_ID --repo travelinman1013/jazzapedia
    # Paste your Account ID when prompted
    ```
 
    Or via GitHub web:
-   - Go to https://github.com/travelinman1013/personaljazzwiki/settings/secrets/actions
+   - Go to https://github.com/travelinman1013/jazzapedia/settings/secrets/actions
    - Add two secrets:
      - `CLOUDFLARE_API_TOKEN`: Your API token
      - `CLOUDFLARE_ACCOUNT_ID`: Your account ID
@@ -141,7 +143,7 @@ git push
 4. **Create Cloudflare Pages Project:**
    - Go to Cloudflare Dashboard > Pages
    - Click "Create a project"
-   - Name it `personal-artist-wiki`
+   - Name it `jazzapedia`
    - You can skip the initial setup since we're using GitHub Actions
 
 #### Step 4: Trigger Deployment

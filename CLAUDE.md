@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-PersonalJazzWiki is a static site generator that creates a Wikipedia-style wiki for 3,400+ musician profiles. Built with Astro, it generates ~4,000 HTML pages from markdown files stored in an Obsidian vault.
+Jazzapedia is a Wikipedia-style encyclopedia for 3,400+ musician profiles. Built with Astro, it generates ~4,000 HTML pages from markdown files stored in an Obsidian vault.
+
+**Live Site:** https://jazzapedia.com
 
 ## Project Location
 
@@ -29,7 +31,7 @@ npm run sync         # Sync artist content from Obsidian vault
 For production deployment:
 ```bash
 npm run build:prod
-npx wrangler pages deploy dist --project-name personal-artist-wiki
+npx wrangler pages deploy dist --project-name jazzapedia
 ```
 
 ## Architecture
@@ -86,4 +88,4 @@ See `~/.claude/skills/spotify-metadata.md` for full database schema and query ex
 
 ## Deployment
 
-GitHub repo: `travelinman1013/personaljazzwiki`. Cloudflare Pages deployment via GitHub Actions. See `DEPLOYMENT.md` for setup instructions including required secrets (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`).
+GitHub repo: `travelinman1013/jazzapedia`. Cloudflare Pages deployment via GitHub Actions. See `DEPLOYMENT.md` for setup instructions including required secrets (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`).

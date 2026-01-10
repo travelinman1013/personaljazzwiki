@@ -63,7 +63,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: personal-artist-wiki
+          projectName: jazzapedia
           directory: dist
           # Optional: Enable this for GitHub Deployments
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}

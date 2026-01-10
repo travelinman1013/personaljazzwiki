@@ -1,4 +1,4 @@
-// Settings management for PersonalJazzWiki
+// Settings management for Jazzapedia
 
 export type ThemeColor =
   | 'wikipedia-blue'

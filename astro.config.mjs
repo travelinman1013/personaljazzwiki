@@ -5,7 +5,7 @@ import wikiLinkPlugin from 'remark-wiki-link';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://personaljazzwiki.pages.dev',
+  site: 'https://jazzapedia.com',
   integrations: [tailwind()],
   markdown: {
     remarkPlugins: [

@@ -1,6 +1,8 @@
-# PersonalJazzWiki
+# Jazzapedia
 
-A Wikipedia-style wiki for 3,400+ musician profiles with full-text search, genre/instrument browsing, and artist connections.
+A Wikipedia-style encyclopedia for 3,400+ musician profiles with full-text search, genre/instrument browsing, and artist connections.
+
+**Live Site:** https://jazzapedia.com
 
 ## Features
 
@@ -75,7 +77,7 @@ Quick deploy to Cloudflare Pages:
 
 ```bash
 npm run build:prod
-npx wrangler pages deploy dist --project-name personal-artist-wiki
+npx wrangler pages deploy dist --project-name jazzapedia
 ```
 
 ## Content Source
