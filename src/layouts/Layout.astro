@@ -85,7 +85,7 @@ const { title, description = 'A personal wiki for music artists and their connec
           </a>
 
           <!-- Navigation -->
-          <nav class="flex items-center space-x-1">
+          <nav class="nav-desktop">
             <a href="/" class="nav-link">Home</a>
             <a href="/artists" class="nav-link">Artists</a>
             <a href="/genres" class="nav-link">Genres</a>
@@ -105,7 +105,35 @@ const { title, description = 'A personal wiki for music artists and their connec
               </svg>
             </a>
           </nav>
+
+          <!-- Mobile Navigation -->
+          <div class="nav-mobile-controls">
+            <button type="button" class="nav-link search-trigger" title="Search" aria-label="Open search">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </button>
+            <button type="button" class="hamburger-btn" id="hamburger-btn" aria-label="Toggle menu" aria-expanded="false">
+              <svg class="hamburger-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+              <svg class="close-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
+
+        <!-- Mobile Menu -->
+        <nav class="mobile-menu" id="mobile-menu">
+          <a href="/" class="mobile-nav-link">Home</a>
+          <a href="/artists" class="mobile-nav-link">Artists</a>
+          <a href="/genres" class="mobile-nav-link">Genres</a>
+          <a href="/instruments" class="mobile-nav-link">Instruments</a>
+          <a href="/wwoz" class="mobile-nav-link">WWOZ</a>
+          <a href="/random" class="mobile-nav-link">Random</a>
+          <a href="/settings" class="mobile-nav-link">Settings</a>
+        </nav>
       </div>
     </header>
 
@@ -188,6 +216,102 @@ const { title, description = 'A personal wiki for music artists and their connec
         .search-kbd {
           display: inline;
         }
+      }
+
+      /* Mobile Navigation */
+      .nav-desktop {
+        display: none;
+      }
+
+      @media (min-width: 768px) {
+        .nav-desktop {
+          display: flex;
+          align-items: center;
+          gap: 0.25rem;
+        }
+      }
+
+      .nav-mobile-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      @media (min-width: 768px) {
+        .nav-mobile-controls {
+          display: none;
+        }
+      }
+
+      .hamburger-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        color: var(--color-text-secondary);
+        transition: color var(--duration-fast) var(--ease-smooth);
+        border-radius: var(--radius-md);
+      }
+
+      .hamburger-btn:hover {
+        color: var(--color-link);
+        background: var(--color-accent-light);
+      }
+
+      .hamburger-btn svg {
+        width: 24px;
+        height: 24px;
+      }
+
+      .hamburger-btn .close-icon {
+        display: none;
+      }
+
+      .hamburger-btn[aria-expanded="true"] .hamburger-icon {
+        display: none;
+      }
+
+      .hamburger-btn[aria-expanded="true"] .close-icon {
+        display: block;
+      }
+
+      .mobile-menu {
+        display: none;
+        flex-direction: column;
+        gap: 0.25rem;
+        padding: 1rem 0;
+        border-top: 1px solid var(--color-border);
+        margin-top: 0.75rem;
+      }
+
+      .mobile-menu.is-open {
+        display: flex;
+      }
+
+      @media (min-width: 768px) {
+        .mobile-menu {
+          display: none !important;
+        }
+      }
+
+      .mobile-nav-link {
+        display: block;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        color: var(--color-text);
+        text-decoration: none;
+        border-radius: var(--radius-md);
+        transition: all var(--duration-fast) var(--ease-smooth);
+      }
+
+      .mobile-nav-link:hover {
+        background: var(--color-accent-light);
+        color: var(--color-link);
       }
 
       /* Wiki link styling */
@@ -392,6 +516,25 @@ const { title, description = 'A personal wiki for music artists and their connec
             document.documentElement.setAttribute('data-mode', e.matches ? 'dark' : 'light');
           }
         });
+
+        // Mobile menu toggle
+        var hamburgerBtn = document.getElementById('hamburger-btn');
+        var mobileMenu = document.getElementById('mobile-menu');
+
+        if (hamburgerBtn && mobileMenu) {
+          hamburgerBtn.addEventListener('click', function() {
+            var isOpen = mobileMenu.classList.toggle('is-open');
+            hamburgerBtn.setAttribute('aria-expanded', isOpen);
+          });
+
+          // Close menu when clicking a link
+          mobileMenu.querySelectorAll('a').forEach(function(link) {
+            link.addEventListener('click', function() {
+              mobileMenu.classList.remove('is-open');
+              hamburgerBtn.setAttribute('aria-expanded', 'false');
+            });
+          });
+        }
       });
     </script>
   </body>

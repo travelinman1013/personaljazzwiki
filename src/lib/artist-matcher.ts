@@ -1,15 +1,13 @@
 /**
- * Artist Matcher Utility
+ * Artist Matcher Utility - D1 Database Version
  *
- * Provides fuzzy and exact matching for artist names using Fuse.js
- * Used to link WWOZ track artists to wiki artist profiles
+ * Provides artist matching functions using the D1 database.
+ * Used to link track artists to wiki artist profiles.
  */
 
-import Fuse from 'fuse.js';
-
 export interface ArtistEntry {
-  id: string;       // slug
-  name: string;     // display name (title)
+  slug: string;
+  title: string;
 }
 
 export interface MatchResult {
@@ -30,136 +28,122 @@ export function toArtistSlug(name: string): string {
 }
 
 /**
- * Artist Matcher class for finding wiki artists from track metadata
+ * Find an artist by name using the D1 database
+ * Returns null if no match is found
  */
-export class ArtistMatcher {
-  private exactMap: Map<string, ArtistEntry>;
-  private fuse: Fuse<ArtistEntry>;
-  private threshold: number;
-  private cache: Map<string, MatchResult | null>;
+export async function findArtistByName(
+  db: D1Database,
+  name: string
+): Promise<ArtistEntry | null> {
+  if (!name || name.trim() === '') return null;
 
-  constructor(artists: ArtistEntry[], threshold = 0.3) {
-    this.threshold = threshold;
-    this.cache = new Map();
+  const slug = toArtistSlug(name);
 
-    // Build exact match map (case-insensitive)
-    this.exactMap = new Map();
-    for (const artist of artists) {
-      const normalizedName = artist.name.toLowerCase().trim();
-      this.exactMap.set(normalizedName, artist);
+  try {
+    const result = await db
+      .prepare('SELECT slug, title FROM artists WHERE slug = ?')
+      .bind(slug)
+      .first();
+
+    if (result) {
+      return result as ArtistEntry;
     }
-
-    // Configure Fuse.js for fuzzy matching
-    this.fuse = new Fuse(artists, {
-      keys: ['name'],
-      threshold: threshold,
-      includeScore: true,
-      ignoreLocation: true,
-      minMatchCharLength: 2,
-    });
+  } catch (error) {
+    console.error('Error finding artist:', error);
   }
 
-  /**
-   * Find the best matching artist for a given name
-   * Returns null if no good match is found
-   * Results are cached for performance
-   */
-  match(name: string): MatchResult | null {
-    if (!name || name.trim() === '') return null;
-
-    const normalizedName = name.toLowerCase().trim();
-
-    // Check cache first
-    if (this.cache.has(normalizedName)) {
-      return this.cache.get(normalizedName)!;
-    }
-
-    // Try exact match first (case-insensitive)
-    const exactMatch = this.exactMap.get(normalizedName);
-    if (exactMatch) {
-      const result: MatchResult = {
-        artist: exactMatch,
-        score: 1.0,
-        matchType: 'exact',
-      };
-      this.cache.set(normalizedName, result);
-      return result;
-    }
-
-    // Fall back to fuzzy search
-    const results = this.fuse.search(name);
-    if (results.length > 0 && results[0].score !== undefined) {
-      const best = results[0];
-      // Fuse score is 0 = perfect, 1 = no match
-      // Convert to 0-1 where 1 = perfect
-      const normalizedScore = 1 - best.score;
-
-      const result: MatchResult = {
-        artist: best.item,
-        score: normalizedScore,
-        matchType: 'fuzzy',
-      };
-      this.cache.set(normalizedName, result);
-      return result;
-    }
-
-    // Cache null results too to avoid repeated searches
-    this.cache.set(normalizedName, null);
-    return null;
-  }
-
-  /**
-   * Find all artists matching a name above the threshold
-   * Useful for disambiguation or debugging
-   */
-  matchAll(name: string, limit = 5): MatchResult[] {
-    if (!name || name.trim() === '') return [];
-
-    const results = this.fuse.search(name, { limit });
-    return results
-      .filter(r => r.score !== undefined)
-      .map(r => ({
-        artist: r.item,
-        score: 1 - (r.score ?? 1),
-        matchType: 'fuzzy' as const,
-      }));
-  }
-
-  /**
-   * Check if an exact match exists (case-insensitive)
-   */
-  hasExactMatch(name: string): boolean {
-    const normalizedName = name.toLowerCase().trim();
-    return this.exactMap.has(normalizedName);
-  }
-
-  /**
-   * Get all artists in the matcher
-   */
-  getAllArtists(): ArtistEntry[] {
-    return Array.from(this.exactMap.values());
-  }
-
-  /**
-   * Get the number of artists in the matcher
-   */
-  get size(): number {
-    return this.exactMap.size;
-  }
+  return null;
 }
 
 /**
- * Create an artist matcher from a collection of artist entries
- *
- * Usage:
- * ```ts
- * import { getCollection } from 'astro:content';
- * const artists = await getCollection('artists');
- * const entries = artists.map(a => ({ id: a.id, name: a.data.title ?? a.id }));
- * const matcher = createArtistMatcher(entries);
- * const result = matcher.match('Duke Ellington');
- * ```
+ * Find multiple artists by their names in a single batch query
+ * Returns a Map of lowercase name -> ArtistEntry (or null if not found)
  */
-export function createArtistMatcher(artists: ArtistEntry[], threshold = 0.3): ArtistMatcher {
-  return new ArtistMatcher(artists, threshold);
+export async function findArtistsByNames(
+  db: D1Database,
+  names: string[]
+): Promise<Map<string, ArtistEntry | null>> {
+  const result = new Map<string, ArtistEntry | null>();
+
+  if (!names || names.length === 0) return result;
+
+  // Convert names to slugs
+  const uniqueNames = [...new Set(names)];
+  const slugs = uniqueNames.map(toArtistSlug);
+  const slugToName = new Map<string, string>();
+  uniqueNames.forEach((name, i) => {
+    slugToName.set(slugs[i], name.toLowerCase());
+  });
+
+  try {
+    // Build query with placeholders
+    const placeholders = slugs.map(() => '?').join(',');
+    const { results } = await db
+      .prepare(`SELECT slug, title FROM artists WHERE slug IN (${placeholders})`)
+      .bind(...slugs)
+      .all();
+
+    // Initialize all names as null
+    uniqueNames.forEach(name => {
+      result.set(name.toLowerCase(), null);
+    });
+
+    // Map found artists back to names
+    (results as ArtistEntry[]).forEach(artist => {
+      const name = slugToName.get(artist.slug);
+      if (name) {
+        result.set(name, artist);
+      }
+    });
+  } catch (error) {
+    console.error('Error finding artists:', error);
+    // Initialize all as null on error
+    uniqueNames.forEach(name => {
+      result.set(name.toLowerCase(), null);
+    });
+  }
+
+  return result;
+}
+
+/**
+ * Search for artists by partial name match
+ * Uses LIKE query for simple fuzzy matching
+ */
+export async function searchArtists(
+  db: D1Database,
+  query: string,
+  limit = 10
+): Promise<ArtistEntry[]> {
+  if (!query || query.trim().length < 2) return [];
+
+  try {
+    const { results } = await db
+      .prepare(`
+        SELECT slug, title FROM artists
+        WHERE title LIKE ?
+        ORDER BY title
+        LIMIT ?
+      `)
+      .bind(`%${query}%`, limit)
+      .all();
+
+    return results as ArtistEntry[];
+  } catch (error) {
+    console.error('Error searching artists:', error);
+    return [];
+  }
+}
+
+// Type declaration for D1Database (Cloudflare Workers)
+declare global {
+  interface D1Database {
+    prepare(query: string): D1PreparedStatement;
+  }
+
+  interface D1PreparedStatement {
+    bind(...values: unknown[]): D1PreparedStatement;
+    first<T = unknown>(): Promise<T | null>;
+    all<T = unknown>(): Promise<{ results: T[]; success: boolean }>;
+  }
 }

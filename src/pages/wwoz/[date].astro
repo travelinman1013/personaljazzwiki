@@ -1,7 +1,19 @@
 ---
+/**
+ * WWOZ Playlist Page - Shows tracks played on a specific date
+ * Uses D1 database for artist matching
+ */
 import Layout from '../../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
-import { ArtistMatcher, toArtistSlug } from '../../lib/artist-matcher';
+
+// Access D1 from runtime env
+const db = Astro.locals.runtime?.env?.DB;
+
+// Set cache headers
+Astro.response.headers.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
+
+// Prerender WWOZ pages at build time (small dataset)
+export const prerender = true;
 
 export async function getStaticPaths() {
   const wwozLogs = await getCollection('wwoz');
@@ -13,14 +25,6 @@ export async function getStaticPaths() {
 
 const { log } = Astro.props;
 const { date, stats, tracks } = log.data;
-
-// Build artist matcher
-const artists = await getCollection('artists');
-const artistEntries = artists.map(a => ({
-  id: a.id,
-  name: (a.data.title as string) ?? a.id,
-}));
-const matcher = new ArtistMatcher(artistEntries);
 
 // Format date for display
 const formatDateFull = (dateStr: string) => {
@@ -46,6 +50,48 @@ const matchRate = stats && stats.totalTracks > 0
   ? ((stats.successfullyFound / stats.totalTracks) * 100).toFixed(1)
   : '0';
 
+// Helper to convert artist name to slug
+const toSlug = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+
+// Build a cache of artist matches from database
+interface ArtistMatch {
+  slug: string;
+  title: string;
+}
+
+// Cache for artist lookups to avoid repeated queries
+const artistMatchCache = new Map<string, ArtistMatch | null>();
+
+// Pre-load all unique artist names from tracks and batch query them
+const uniqueArtistNames = [...new Set(tracks?.map(t => t.artist) || [])];
+
+if (db && uniqueArtistNames.length > 0) {
+  try {
+    // Try exact slug matches first (most common case)
+    const slugs = uniqueArtistNames.map(toSlug);
+    const placeholders = slugs.map(() => '?').join(',');
+
+    const { results } = await db.prepare(`
+      SELECT slug, title FROM artists WHERE slug IN (${placeholders})
+    `).bind(...slugs).all();
+
+    // Build slug-to-artist map
+    const slugToArtist = new Map<string, ArtistMatch>();
+    (results as ArtistMatch[]).forEach(artist => {
+      slugToArtist.set(artist.slug, artist);
+    });
+
+    // Map artist names to matches
+    uniqueArtistNames.forEach(name => {
+      const slug = toSlug(name);
+      const match = slugToArtist.get(slug);
+      artistMatchCache.set(name.toLowerCase(), match || null);
+    });
+  } catch (error) {
+    console.error('Error loading artist matches:', error);
+  }
+}
+
 // Wiki artist match helper
 interface MatchedArtist {
   name: string;
@@ -54,11 +100,11 @@ interface MatchedArtist {
 }
 
 const matchArtist = (artistName: string): MatchedArtist => {
-  const match = matcher.match(artistName);
-  if (match && match.score >= 0.7) {
+  const cached = artistMatchCache.get(artistName.toLowerCase());
+  if (cached) {
     return {
       name: artistName,
-      slug: match.artist.id,
+      slug: cached.slug,
       isMatched: true,
     };
   }

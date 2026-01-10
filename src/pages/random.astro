@@ -1,13 +1,25 @@
 ---
-import { getCollection } from 'astro:content';
+// Server-side random artist redirect using D1
+// Queries D1 for a random artist slug and redirects immediately
 
-// Get all artists
-const allArtists = await getCollection('artists');
+// Get runtime environment (D1 binding)
+const db = Astro.locals.runtime.env.DB;
 
-// Pick a random artist
-const randomIndex = Math.floor(Math.random() * allArtists.length);
-const randomArtist = allArtists[randomIndex];
+// Query D1 for a random artist slug
+const result = await db.prepare(
+  'SELECT slug FROM artists ORDER BY RANDOM() LIMIT 1'
+).first<{ slug: string }>();
 
-// Redirect to the random artist page
-return Astro.redirect(`/artists/${randomArtist.id}`);
+// If we got a result, redirect to the artist page
+if (result?.slug) {
+  // Set no-store cache control to ensure fresh random selection each time
+  Astro.response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+
+  // Perform server-side redirect
+  return Astro.redirect(`/artists/${result.slug}`);
+}
+
+// Fallback: if no artists found, redirect to artists browse page
+Astro.response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+return Astro.redirect('/artists');
 ---

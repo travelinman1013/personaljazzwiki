@@ -1,34 +1,49 @@
 ---
+/**
+ * Genres Index - Browse all genres
+ * Uses D1 database for data
+ */
 import Layout from '../../layouts/Layout.astro';
-import { getCollection } from 'astro:content';
 
-// Get all artists
-const allArtists = await getCollection('artists');
+// Access D1 from runtime env
+const db = Astro.locals.runtime?.env?.DB;
 
-// Count artists per genre
-const genreCounts = new Map<string, number>();
-const genreArtists = new Map<string, typeof allArtists>();
+// Set cache headers
+Astro.response.headers.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
 
-allArtists.forEach(artist => {
-  const genres = artist.data.genres as string[] | undefined;
-  genres?.forEach(genre => {
-    genreCounts.set(genre, (genreCounts.get(genre) || 0) + 1);
+interface Genre {
+  id: number;
+  name: string;
+  slug: string;
+  artist_count: number;
+}
 
-    if (!genreArtists.has(genre)) {
-      genreArtists.set(genre, []);
-    }
-    genreArtists.get(genre)!.push(artist);
-  });
-});
+let genres: Genre[] = [];
+let totalArtists = 0;
+let errorMessage = '';
 
-// Sort genres by count (descending), then alphabetically
-const sortedGenres = Array.from(genreCounts.entries())
-  .sort((a, b) => {
-    if (b[1] !== a[1]) return b[1] - a[1];
-    return a[0].localeCompare(b[0]);
-  });
+if (db) {
+  try {
+    // Get all genres from lookup table
+    const { results } = await db
+      .prepare('SELECT id, name, slug, artist_count FROM genres ORDER BY artist_count DESC')
+      .all();
+    genres = results as Genre[];
 
-// Helper to create slug
+    // Get total artist count
+    const countResult = await db
+      .prepare('SELECT COUNT(*) as count FROM artists')
+      .first();
+    totalArtists = (countResult as { count: number })?.count || 0;
+  } catch (error) {
+    console.error('Error loading genres:', error);
+    errorMessage = 'Failed to load genres.';
+  }
+} else {
+  errorMessage = 'Database not available.';
+}
+
+// Helper to create slug (for any manual needs)
 const toSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
 
 // Group genres by category (rough categorization based on common patterns)
@@ -66,110 +81,116 @@ const categorizeGenre = (genre: string): string => {
 };
 
 // Group by category
-const genresByCategory = new Map<string, Array<[string, number]>>();
-sortedGenres.forEach(([genre, count]) => {
-  const category = categorizeGenre(genre);
+const genresByCategory = new Map<string, Genre[]>();
+genres.forEach(genre => {
+  const category = categorizeGenre(genre.name);
   if (!genresByCategory.has(category)) {
     genresByCategory.set(category, []);
   }
-  genresByCategory.get(category)!.push([genre, count]);
+  genresByCategory.get(category)!.push(genre);
 });
 
 // Sort categories by total artist count
 const sortedCategories = Array.from(genresByCategory.entries())
   .sort((a, b) => {
-    const totalA = a[1].reduce((sum, [_, count]) => sum + count, 0);
-    const totalB = b[1].reduce((sum, [_, count]) => sum + count, 0);
+    const totalA = a[1].reduce((sum, g) => sum + g.artist_count, 0);
+    const totalB = b[1].reduce((sum, g) => sum + g.artist_count, 0);
     return totalB - totalA;
   });
 
 // Stats
-const totalGenres = genreCounts.size;
-const totalArtists = allArtists.length;
-const topGenre = sortedGenres[0];
+const totalGenres = genres.length;
+const topGenre = genres[0];
 ---
 
 <Layout title="Genres">
   <div class="article-content">
     <h1>Browse by Genre</h1>
 
-    <p class="text-wiki-text-secondary mb-6">
-      Explore <strong>{totalGenres}</strong> genres across <strong>{totalArtists.toLocaleString()}</strong> artists.
-      {topGenre && (
-        <>
-          The most common genre is <a href={`/genres/${toSlug(topGenre[0])}`} class="text-wiki-link">{topGenre[0]}</a> with {topGenre[1].toLocaleString()} artists.
-        </>
-      )}
-    </p>
+    {errorMessage ? (
+      <p class="text-red-600">{errorMessage}</p>
+    ) : (
+      <>
+        <p class="text-wiki-text-secondary mb-6">
+          Explore <strong>{totalGenres}</strong> genres across <strong>{totalArtists.toLocaleString()}</strong> artists.
+          {topGenre && (
+            <>
+              The most common genre is <a href={`/genres/${topGenre.slug}`} class="text-wiki-link">{topGenre.name}</a> with {topGenre.artist_count.toLocaleString()} artists.
+            </>
+          )}
+        </p>
 
-    <!-- Top Genres Quick Links -->
-    <div class="bg-wiki-accent-light border border-wiki-border rounded p-4 mb-8">
-      <h2 class="text-lg font-serif mb-3">Top Genres</h2>
-      <div class="flex flex-wrap gap-2">
-        {sortedGenres.slice(0, 20).map(([genre, count]) => (
-          <a
-            href={`/genres/${toSlug(genre)}`}
-            class="inline-flex items-center px-3 py-1.5 bg-white border border-wiki-border rounded text-sm hover:bg-wiki-bg hover:border-wiki-link transition-colors"
-          >
-            <span class="text-wiki-link font-medium">{genre}</span>
-            <span class="ml-2 text-wiki-text-muted text-xs">({count.toLocaleString()})</span>
-          </a>
-        ))}
-      </div>
-    </div>
-
-    <!-- Genres by Category -->
-    <div class="space-y-8">
-      {sortedCategories.map(([category, genres]) => {
-        const categoryTotal = genres.reduce((sum, [_, count]) => sum + count, 0);
-        return (
-          <section>
-            <h2 class="text-xl font-serif border-b border-wiki-border pb-2 mb-4">
-              {category}
-              <span class="text-wiki-text-muted text-sm font-normal ml-2">
-                ({genres.length} genres, {categoryTotal.toLocaleString()} artists)
-              </span>
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-              {genres.slice(0, 30).map(([genre, count]) => (
-                <a
-                  href={`/genres/${toSlug(genre)}`}
-                  class="flex items-center justify-between p-2 hover:bg-wiki-accent-light rounded border border-transparent hover:border-wiki-border-light transition-colors"
-                >
-                  <span class="text-wiki-link">{genre}</span>
-                  <span class="text-wiki-text-muted text-sm">{count.toLocaleString()} artists</span>
-                </a>
-              ))}
-              {genres.length > 30 && (
-                <div class="p-2 text-wiki-text-muted text-sm italic">
-                  +{genres.length - 30} more genres...
-                </div>
-              )}
-            </div>
-          </section>
-        );
-      })}
-    </div>
-
-    <!-- All Genres Alphabetical (collapsed) -->
-    <details class="mt-8 border border-wiki-border rounded">
-      <summary class="p-4 bg-wiki-bg-nav cursor-pointer hover:bg-wiki-accent-light font-medium">
-        View all {totalGenres} genres alphabetically
-      </summary>
-      <div class="p-4 max-h-96 overflow-y-auto">
-        <div class="columns-2 md:columns-3 lg:columns-4 gap-4">
-          {Array.from(genreCounts.entries())
-            .sort((a, b) => a[0].localeCompare(b[0]))
-            .map(([genre, count]) => (
+        <!-- Top Genres Quick Links -->
+        <div class="bg-wiki-accent-light border border-wiki-border rounded p-4 mb-8">
+          <h2 class="text-lg font-serif mb-3">Top Genres</h2>
+          <div class="flex flex-wrap gap-2">
+            {genres.slice(0, 20).map(genre => (
               <a
-                href={`/genres/${toSlug(genre)}`}
-                class="block text-wiki-link hover:underline text-sm py-0.5 break-inside-avoid"
+                href={`/genres/${genre.slug}`}
+                class="inline-flex items-center px-3 py-1.5 bg-white border border-wiki-border rounded text-sm hover:bg-wiki-bg hover:border-wiki-link transition-colors"
               >
-                {genre} <span class="text-wiki-text-muted">({count})</span>
+                <span class="text-wiki-link font-medium">{genre.name}</span>
+                <span class="ml-2 text-wiki-text-muted text-xs">({genre.artist_count.toLocaleString()})</span>
               </a>
             ))}
+          </div>
         </div>
-      </div>
-    </details>
+
+        <!-- Genres by Category -->
+        <div class="space-y-8">
+          {sortedCategories.map(([category, categoryGenres]) => {
+            const categoryTotal = categoryGenres.reduce((sum, g) => sum + g.artist_count, 0);
+            return (
+              <section>
+                <h2 class="text-xl font-serif border-b border-wiki-border pb-2 mb-4">
+                  {category}
+                  <span class="text-wiki-text-muted text-sm font-normal ml-2">
+                    ({categoryGenres.length} genres, {categoryTotal.toLocaleString()} artists)
+                  </span>
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                  {categoryGenres.slice(0, 30).map(genre => (
+                    <a
+                      href={`/genres/${genre.slug}`}
+                      class="flex items-center justify-between p-2 hover:bg-wiki-accent-light rounded border border-transparent hover:border-wiki-border-light transition-colors"
+                    >
+                      <span class="text-wiki-link">{genre.name}</span>
+                      <span class="text-wiki-text-muted text-sm">{genre.artist_count.toLocaleString()} artists</span>
+                    </a>
+                  ))}
+                  {categoryGenres.length > 30 && (
+                    <div class="p-2 text-wiki-text-muted text-sm italic">
+                      +{categoryGenres.length - 30} more genres...
+                    </div>
+                  )}
+                </div>
+              </section>
+            );
+          })}
+        </div>
+
+        <!-- All Genres Alphabetical (collapsed) -->
+        <details class="mt-8 border border-wiki-border rounded">
+          <summary class="p-4 bg-wiki-bg-nav cursor-pointer hover:bg-wiki-accent-light font-medium">
+            View all {totalGenres} genres alphabetically
+          </summary>
+          <div class="p-4 max-h-96 overflow-y-auto">
+            <div class="columns-2 md:columns-3 lg:columns-4 gap-4">
+              {genres
+                .slice()
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map(genre => (
+                  <a
+                    href={`/genres/${genre.slug}`}
+                    class="block text-wiki-link hover:underline text-sm py-0.5 break-inside-avoid"
+                  >
+                    {genre.name} <span class="text-wiki-text-muted">({genre.artist_count})</span>
+                  </a>
+                ))}
+            </div>
+          </div>
+        </details>
+      </>
+    )}
   </div>
 </Layout>

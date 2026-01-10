@@ -6,14 +6,22 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview",
+    "preview": "wrangler dev",
+    "deploy": "astro build && wrangler pages deploy dist --project-name jazzapedia",
     "astro": "astro",
     "sync": "./scripts/sync-content.sh && ./scripts/sync-wwoz.sh",
     "insights": "npx tsx scripts/compute-wwoz-insights.ts",
     "build:prod": "npm run sync && npm run insights && npm run build && npm run postbuild",
-    "postbuild": "npx pagefind --site dist"
+    "postbuild": "npx pagefind --site dist",
+    "sync:local": "npx tsx scripts/sync-to-d1.ts --local",
+    "sync:remote": "npx tsx scripts/sync-to-d1.ts --remote",
+    "sync:dry-run": "npx tsx scripts/sync-to-d1.ts --remote --dry-run",
+    "upload:portraits": "npx tsx scripts/upload-portraits-r2.ts",
+    "db:migrate": "wrangler d1 execute jazzapedia --remote --file=migrations/0001_initial.sql",
+    "db:migrate:local": "wrangler d1 execute jazzapedia --local --file=migrations/0001_initial.sql"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "^12.6.12",
     "@astrojs/tailwind": "^6.0.2",
     "@fontsource-variable/inter": "^5.2.8",
     "@fontsource-variable/jetbrains-mono": "^5.2.8",
@@ -27,6 +35,8 @@
     "tailwindcss": "^3.4.19"
   },
   "devDependencies": {
-    "@types/node": "^25.0.3"
+    "@cloudflare/workers-types": "^4.20260109.0",
+    "@types/node": "^25.0.3",
+    "wrangler": "^4.58.0"
   }
 }

@@ -2,77 +2,126 @@
 /**
  * Home Page - Jazz Club Playbill Aesthetic
  * Features art deco hero, animated stat boxes, and featured content sections
+ * Uses D1 database for SSR
  */
 import Layout from '../layouts/Layout.astro';
-import { getCollection } from 'astro:content';
 import StatBox from '../components/jazz/StatBox.astro';
 import ArtistCard from '../components/jazz/ArtistCard.astro';
 import GenreBadge from '../components/jazz/GenreBadge.astro';
 
-// Get all artists from the collection
-let allArtists: Awaited<ReturnType<typeof getCollection>> = [];
-let errorMessage = '';
+// Access D1 from runtime env
+const db = Astro.locals.runtime?.env?.DB;
+const R2_URL = Astro.locals.runtime?.env?.R2_PUBLIC_URL || 'https://media.jazzapedia.com';
 
-try {
-  allArtists = await getCollection('artists');
-} catch (e) {
-  errorMessage = String(e);
+// Set cache headers (shorter for homepage with random content)
+Astro.response.headers.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
+
+interface Artist {
+  slug: string;
+  title: string;
+  artist_type: string | null;
+  genres: string | null;
+  image_filename: string | null;
+  spotify_data: string | null;
+  updated_at: string | null;
 }
 
-// Get stats
-const artistCount = allArtists.length;
-const artistsWithSpotify = allArtists.filter(a => a.data.spotify_data?.popularity).length;
+interface Genre {
+  name: string;
+  artist_count: number;
+}
 
-// Random selection for Now Playing - 12 cards fills complete rows at all breakpoints (2/3/4 cols)
-const shuffled = [...allArtists].sort(() => Math.random() - 0.5);
-const randomArtists = shuffled.slice(0, 12);
+let artistCount = 0;
+let genreCount = 0;
+let instrumentCount = 0;
+let artistsWithSpotify = 0;
+let randomArtists: Artist[] = [];
+let recentArtists: Artist[] = [];
+let topGenres: Genre[] = [];
+let errorMessage = '';
 
-// Get recently updated artists
-const recentArtists = allArtists
-  .filter(a => a.data.last_updated)
-  .sort((a, b) => {
-    const dateA = a.data.last_updated ? new Date(a.data.last_updated).getTime() : 0;
-    const dateB = b.data.last_updated ? new Date(b.data.last_updated).getTime() : 0;
-    return dateB - dateA;
-  })
-  .slice(0, 6);
+if (db) {
+  try {
+    // Run queries in parallel for better performance
+    const [
+      artistCountResult,
+      genreCountResult,
+      instrumentCountResult,
+      spotifyCountResult,
+      randomResult,
+      recentResult,
+      genresResult,
+    ] = await Promise.all([
+      // Total artists
+      db.prepare('SELECT COUNT(*) as count FROM artists').first(),
+      // Total genres
+      db.prepare('SELECT COUNT(*) as count FROM genres').first(),
+      // Total instruments
+      db.prepare('SELECT COUNT(*) as count FROM instruments').first(),
+      // Artists with Spotify popularity
+      db.prepare(`
+        SELECT COUNT(*) as count FROM artists
+        WHERE json_extract(spotify_data, '$.popularity') IS NOT NULL
+      `).first(),
+      // 12 random artists with images
+      db.prepare(`
+        SELECT slug, title, artist_type, genres, image_filename, spotify_data
+        FROM artists
+        WHERE image_filename IS NOT NULL
+        ORDER BY RANDOM()
+        LIMIT 12
+      `).all(),
+      // 6 recently updated artists
+      db.prepare(`
+        SELECT slug, title, genres, updated_at
+        FROM artists
+        WHERE updated_at IS NOT NULL
+        ORDER BY updated_at DESC
+        LIMIT 6
+      `).all(),
+      // Top 15 genres
+      db.prepare(`
+        SELECT name, artist_count
+        FROM genres
+        ORDER BY artist_count DESC
+        LIMIT 15
+      `).all(),
+    ]);
 
-// Get genre counts
-const genreCounts = new Map<string, number>();
-allArtists.forEach(artist => {
-  const genres = artist.data.genres as string[] | undefined;
-  genres?.forEach(genre => {
-    genreCounts.set(genre, (genreCounts.get(genre) || 0) + 1);
-  });
-});
-const topGenres = Array.from(genreCounts.entries())
-  .sort((a, b) => b[1] - a[1])
-  .slice(0, 15);
+    artistCount = (artistCountResult as { count: number })?.count || 0;
+    genreCount = (genreCountResult as { count: number })?.count || 0;
+    instrumentCount = (instrumentCountResult as { count: number })?.count || 0;
+    artistsWithSpotify = (spotifyCountResult as { count: number })?.count || 0;
+    randomArtists = randomResult.results as Artist[];
+    recentArtists = recentResult.results as Artist[];
+    topGenres = genresResult.results as Genre[];
+  } catch (error) {
+    console.error('Error loading homepage data:', error);
+    errorMessage = String(error);
+  }
+} else {
+  errorMessage = 'Database not available';
+}
 
-// Get instrument counts
-const instrumentCounts = new Map<string, number>();
-allArtists.forEach(artist => {
-  const instruments = artist.data.instruments as string[] | undefined;
-  instruments?.forEach(inst => {
-    instrumentCounts.set(inst, (instrumentCounts.get(inst) || 0) + 1);
-  });
-});
-const instrumentCount = instrumentCounts.size;
+// Helper functions
+function parseJson(json: string | null, fallback: any): any {
+  if (!json) return fallback;
+  try {
+    return JSON.parse(json);
+  } catch {
+    return fallback;
+  }
+}
 
-// Helper to format numbers with commas
 const formatNumber = (num: number) => num.toLocaleString();
 
-// Helper to get portrait filename
-const getPortrait = (artist: any) => {
-  const imagePath = artist.data.image_path || artist.data.infobox?.image;
-  if (!imagePath) return undefined;
-  const filename = imagePath.split('/').pop();
-  return `/portraits/${filename}`;
+const getPortrait = (artist: Artist) => {
+  if (!artist.image_filename) return undefined;
+  return `${R2_URL}/portraits/${artist.image_filename}`;
 };
 
-// Get artist type label
-const getArtistType = (artist: any): string | undefined => {
-  const bg = artist.data.infobox?.background;
+const getArtistType = (artist: Artist): string | undefined => {
+  const bg = artist.artist_type;
   if (bg === 'solo_singer') return 'Vocalist';
   if (bg === 'instrumentalist') return 'Instrumentalist';
   if (bg === 'group_or_band') return 'Group';
@@ -109,7 +158,7 @@ const getArtistType = (artist: any): string | undefined => {
 
   {errorMessage && (
     <div class="error-banner">
-      <strong>Error loading artists:</strong> {errorMessage}
+      <strong>Error loading data:</strong> {errorMessage}
     </div>
   )}
 
@@ -117,13 +166,13 @@ const getArtistType = (artist: any): string | undefined => {
   <section class="stats-section">
     <div class="stats-grid">
       <StatBox value={artistCount} label="Artists" icon="&#9835;" href="/artists" />
-      <StatBox value={genreCounts.size} label="Genres" icon="&#127926;" href="/genres" />
+      <StatBox value={genreCount} label="Genres" icon="&#127926;" href="/genres" />
       <StatBox value={instrumentCount} label="Instruments" icon="&#127927;" href="/instruments" />
       <StatBox value={artistsWithSpotify} label="With Spotify" icon="&#127911;" />
     </div>
   </section>
 
-  <!-- Now Playing Section (Popular Artists) -->
+  <!-- Now Playing Section (Random Artists) -->
   <section class="content-section">
     <header class="section-header">
       <div class="section-title-group">
@@ -140,16 +189,20 @@ const getArtistType = (artist: any): string | undefined => {
     </header>
 
     <div class="artists-grid">
-      {randomArtists.map((artist) => (
-        <ArtistCard
-          name={artist.data.title || artist.id}
-          slug={artist.id}
-          portrait={getPortrait(artist)}
-          genres={(artist.data.genres as string[])?.slice(0, 2)}
-          popularity={artist.data.spotify_data?.popularity}
-          artistType={getArtistType(artist)}
-        />
-      ))}
+      {randomArtists.map((artist) => {
+        const genres = parseJson(artist.genres, []);
+        const spotify = parseJson(artist.spotify_data, {});
+        return (
+          <ArtistCard
+            name={artist.title}
+            slug={artist.slug}
+            portrait={getPortrait(artist)}
+            genres={genres.slice(0, 2)}
+            popularity={spotify.popularity}
+            artistType={getArtistType(artist)}
+          />
+        );
+      })}
     </div>
   </section>
 
@@ -170,33 +223,38 @@ const getArtistType = (artist: any): string | undefined => {
     </header>
 
     <div class="genres-cloud">
-      {topGenres.map(([genre, count]) => (
-        <GenreBadge genre={genre} count={count} showCount size="md" />
+      {topGenres.map((genre) => (
+        <GenreBadge genre={genre.name} count={genre.artist_count} showCount size="md" />
       ))}
     </div>
   </section>
 
   <!-- Recently Updated -->
-  <section class="content-section">
-    <header class="section-header">
-      <div class="section-title-group">
-        <span class="section-icon">&#128340;</span>
-        <h2 class="section-title">Recently Updated</h2>
-      </div>
-      <p class="section-subtitle">Latest profile updates</p>
-    </header>
+  {recentArtists.length > 0 && (
+    <section class="content-section">
+      <header class="section-header">
+        <div class="section-title-group">
+          <span class="section-icon">&#128340;</span>
+          <h2 class="section-title">Recently Updated</h2>
+        </div>
+        <p class="section-subtitle">Latest profile updates</p>
+      </header>
 
-    <div class="recent-list">
-      {recentArtists.map(artist => (
-        <a href={`/artists/${artist.id}`} class="recent-item">
-          <span class="recent-name">{artist.data.title || artist.id}</span>
-          <span class="recent-genres">
-            {(artist.data.genres as string[])?.slice(0, 2).join(', ') || 'Various'}
-          </span>
-        </a>
-      ))}
-    </div>
-  </section>
+      <div class="recent-list">
+        {recentArtists.map(artist => {
+          const genres = parseJson(artist.genres, []);
+          return (
+            <a href={`/artists/${artist.slug}`} class="recent-item">
+              <span class="recent-name">{artist.title}</span>
+              <span class="recent-genres">
+                {genres.slice(0, 2).join(', ') || 'Various'}
+              </span>
+            </a>
+          );
+        })}
+      </div>
+    </section>
+  )}
 
   <!-- Quick Navigation -->
   <section class="content-section">
@@ -216,7 +274,7 @@ const getArtistType = (artist: any): string | undefined => {
       <a href="/genres" class="quick-nav-card">
         <span class="quick-nav-icon">&#127926;</span>
         <h3 class="quick-nav-title">Genres</h3>
-        <p class="quick-nav-desc">Explore {genreCounts.size} musical genres</p>
+        <p class="quick-nav-desc">Explore {genreCount} musical genres</p>
       </a>
       <a href="/instruments" class="quick-nav-card">
         <span class="quick-nav-icon">&#127927;</span>
