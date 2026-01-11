@@ -27,9 +27,10 @@ interface Props {
     reverse?: ReverseConnections;
   };
   nameToSlug?: Record<string, string>;
+  showHeading?: boolean;
 }
 
-const { artistSlug, artistName, connections, nameToSlug = {} } = Astro.props;
+const { artistSlug, artistName, connections, nameToSlug = {}, showHeading = true } = Astro.props;
 
 // Build the graph data
 interface Node {
@@ -143,7 +144,11 @@ const graphData = JSON.stringify({ nodes, links });
 
 {hasConnections && (
   <section class="connection-graph-section">
-    <h2 id="connections">Musical Connections</h2>
+    {showHeading ? (
+      <h2 id="connections">Musical Connections</h2>
+    ) : (
+      <h3 id="connection-network" class="graph-subheading">Connection Network</h3>
+    )}
 
     <div class="graph-controls">
       <label class="filter-toggle">
@@ -185,6 +190,15 @@ const graphData = JSON.stringify({ nodes, links });
         <span class="legend-dot mentor"></span>
         <span>Mentors</span>
       </div>
+      <div class="legend-separator"></div>
+      <div class="legend-item">
+        <span class="legend-dot has-page"></span>
+        <span>Has Page</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-dot no-page"></span>
+        <span>No Page</span>
+      </div>
     </div>
   </section>
 )}
@@ -215,6 +229,45 @@ const graphData = JSON.stringify({ nodes, links });
 
   svg.attr('width', width).attr('height', height).attr('viewBox', [0, 0, width, height]);
 
+  // Add SVG defs for glow filter
+  const defs = svg.append('defs');
+
+  // Create glow filters for each color
+  const glowColors = {
+    cyan: '#06b6d4',
+    purple: '#a855f7',
+    yellow: '#eab308',
+    amber: '#f59e0b'
+  };
+
+  Object.entries(glowColors).forEach(([name, color]) => {
+    const filter = defs.append('filter')
+      .attr('id', `glow-${name}`)
+      .attr('x', '-50%')
+      .attr('y', '-50%')
+      .attr('width', '200%')
+      .attr('height', '200%');
+
+    filter.append('feGaussianBlur')
+      .attr('stdDeviation', '3')
+      .attr('result', 'coloredBlur');
+
+    filter.append('feFlood')
+      .attr('flood-color', color)
+      .attr('flood-opacity', '0.6')
+      .attr('result', 'glowColor');
+
+    filter.append('feComposite')
+      .attr('in', 'glowColor')
+      .attr('in2', 'coloredBlur')
+      .attr('operator', 'in')
+      .attr('result', 'softGlow');
+
+    const feMerge = filter.append('feMerge');
+    feMerge.append('feMergeNode').attr('in', 'softGlow');
+    feMerge.append('feMergeNode').attr('in', 'SourceGraphic');
+  });
+
   // Color scheme matching jazz club aesthetic
   const colors = {
     center: '#f59e0b',      // amber
@@ -224,6 +277,17 @@ const graphData = JSON.stringify({ nodes, links });
     collaboratedWith: '#06b6d4',
     influencedBy: '#a855f7',
     mentoredBy: '#eab308'
+  };
+
+  // Map node types to glow filter names
+  const typeToGlow = {
+    center: 'glow-amber',
+    collaborator: 'glow-cyan',
+    influenced: 'glow-purple',
+    mentor: 'glow-yellow',
+    collaboratedWith: 'glow-cyan',
+    influencedBy: 'glow-purple',
+    mentoredBy: 'glow-yellow'
   };
 
   // Create force simulation
@@ -260,8 +324,12 @@ const graphData = JSON.stringify({ nodes, links });
     .selectAll('g')
     .data(data.nodes)
     .join('g')
-    .attr('class', d => `node node-${d.type}`)
+    .attr('class', d => {
+      const isClickable = d.slug !== null;
+      return `node node-${d.type}${isClickable ? ' node-clickable' : ' node-static'}`;
+    })
     .attr('data-type', d => d.type)
+    .attr('data-clickable', d => d.slug !== null)
     .style('cursor', d => d.slug ? 'pointer' : 'default')
     .call(d3.drag()
       .on('start', dragstarted)
@@ -273,7 +341,19 @@ const graphData = JSON.stringify({ nodes, links });
     .attr('r', d => d.type === 'center' ? 16 : 10)
     .attr('fill', d => colors[d.type] || '#666')
     .attr('stroke', '#1a1a2e')
-    .attr('stroke-width', 2);
+    .attr('stroke-width', 2)
+    .attr('opacity', d => (d.slug !== null || d.type === 'center') ? 1 : 0.5)
+    .attr('filter', d => {
+      const isClickable = d.slug !== null;
+      if (isClickable || d.type === 'center') {
+        return `url(#${typeToGlow[d.type]})`;
+      }
+      return null;
+    })
+    .attr('class', d => {
+      const isClickable = d.slug !== null;
+      return isClickable ? 'node-circle-clickable' : 'node-circle-static';
+    });
 
   // Add labels to nodes
   node.append('text')
@@ -292,18 +372,42 @@ const graphData = JSON.stringify({ nodes, links });
     }
   });
 
-  // Hover effects
+  // Hover effects - only for clickable nodes
   node.on('mouseenter', function(event, d) {
-    d3.select(this).select('circle')
-      .transition()
-      .duration(150)
-      .attr('r', d.type === 'center' ? 20 : 14);
+    const isClickable = d.slug !== null;
+    if (isClickable || d.type === 'center') {
+      d3.select(this).select('circle')
+        .transition()
+        .duration(150)
+        .attr('r', d.type === 'center' ? 20 : 14);
+    }
   }).on('mouseleave', function(event, d) {
-    d3.select(this).select('circle')
-      .transition()
-      .duration(150)
-      .attr('r', d.type === 'center' ? 16 : 10);
+    const isClickable = d.slug !== null;
+    if (isClickable || d.type === 'center') {
+      d3.select(this).select('circle')
+        .transition()
+        .duration(150)
+        .attr('r', d.type === 'center' ? 16 : 10);
+    }
   });
+
+  // Animate glow for clickable nodes - pulse the blur amount
+  function animateGlow() {
+    const time = Date.now() / 1000;
+    const blurAmount = 2 + Math.sin(time * 2) * 1.5; // Oscillates between 0.5 and 3.5
+
+    Object.entries(glowColors).forEach(([name]) => {
+      const blurElement = svg.select(`#glow-${name} feGaussianBlur`);
+      if (blurElement.node()) {
+        blurElement.attr('stdDeviation', blurAmount);
+      }
+    });
+
+    requestAnimationFrame(animateGlow);
+  }
+
+  // Start the glow animation
+  animateGlow();
 
   // Simulation tick
   simulation.on('tick', () => {
@@ -391,6 +495,13 @@ const graphData = JSON.stringify({ nodes, links });
     border-top: 1px solid var(--color-border);
   }
 
+  /* When used as subsection (no h2), reduce top styling */
+  .connection-graph-section:has(.graph-subheading) {
+    border-top: none;
+    padding-top: 0;
+    margin-top: 1rem;
+  }
+
   .connection-graph-section h2 {
     font-family: 'Playfair Display Variable', Georgia, serif;
     font-size: 1.5rem;
@@ -399,6 +510,15 @@ const graphData = JSON.stringify({ nodes, links });
     margin-bottom: 1rem;
     border-bottom: 1px solid var(--color-border);
     padding-bottom: 0.25rem;
+  }
+
+  .graph-subheading {
+    font-family: 'Playfair Display Variable', Georgia, serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-text-heading);
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
   }
 
   .graph-controls {
@@ -461,6 +581,13 @@ const graphData = JSON.stringify({ nodes, links });
     gap: 0.375rem;
   }
 
+  .legend-separator {
+    width: 1px;
+    height: 1rem;
+    background: var(--color-border);
+    margin: 0 0.25rem;
+  }
+
   .legend-dot {
     width: 10px;
     height: 10px;
@@ -471,6 +598,28 @@ const graphData = JSON.stringify({ nodes, links });
   .legend-dot.collaborator { background: #06b6d4; }
   .legend-dot.influenced { background: #a855f7; }
   .legend-dot.mentor { background: #eab308; }
+
+  /* Clickable node indicator */
+  .legend-dot.has-page {
+    background: #06b6d4;
+    animation: legend-glow 2s ease-in-out infinite;
+  }
+
+  .legend-dot.no-page {
+    background: #06b6d4;
+    opacity: 0.5;
+  }
+
+  /* Glow animation - applied via JavaScript to preserve filter colors */
+
+  @keyframes legend-glow {
+    0%, 100% {
+      box-shadow: 0 0 2px #06b6d4, 0 0 4px #06b6d4;
+    }
+    50% {
+      box-shadow: 0 0 4px #06b6d4, 0 0 8px #06b6d4;
+    }
+  }
 
   /* Mobile responsiveness */
   @media (max-width: 640px) {

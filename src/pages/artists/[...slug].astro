@@ -134,6 +134,10 @@ const hasConnections =
 // Get name to slug mapping for connection graph navigation
 const nameToSlug = (connectionsIndex as any).nameToSlug || {};
 
+// Check if bio_html already has a Musical Connections section
+// If so, the graph will be rendered as a subsection (no h2)
+const bioHasMusicalConnections = /<h2[^>]*>Musical Connections<\/h2>/i.test(htmlContent);
+
 // Set cache headers for stale-while-revalidate caching
 Astro.response.headers.set(
   'Cache-Control',
@@ -141,19 +145,21 @@ Astro.response.headers.set(
 );
 ---
 
-<WikiArticle title={title} data={data} headings={headings}>
+<WikiArticle title={title} data={data} headings={headings} connections={artistConnections} artistSlug={slug}>
   <Fragment set:html={htmlContent} />
 
   {/* WWOZ Plays Section */}
   <WWOZPlays artistSlug={slug} artistName={title} />
 
   {/* Connection Graph - only if connections exist */}
+  {/* If bio already has Musical Connections section, render graph as subsection */}
   {hasConnections && (
     <ConnectionGraph
       artistSlug={slug}
       artistName={title}
       connections={artistConnections}
       nameToSlug={nameToSlug}
+      showHeading={!bioHasMusicalConnections}
     />
   )}
 </WikiArticle>

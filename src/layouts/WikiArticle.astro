@@ -8,14 +8,31 @@ import Layout from './Layout.astro';
 import Infobox from '../components/Infobox.astro';
 import TableOfContents from '../components/TableOfContents.astro';
 
+interface MusicalConnections {
+  collaborators?: string[];
+  influenced?: string[];
+  mentors?: string[];
+}
+
+interface ReverseConnections {
+  collaboratedWith?: string[];
+  influencedBy?: string[];
+  mentoredBy?: string[];
+}
+
 interface Props {
   title: string;
   data: Record<string, unknown>;
   description?: string;
   headings?: { id: string; text: string }[];
+  connections?: {
+    forward?: MusicalConnections;
+    reverse?: ReverseConnections;
+  };
+  artistSlug?: string;
 }
 
-const { title, data, description, headings = [] } = Astro.props;
+const { title, data, description, headings = [], connections, artistSlug } = Astro.props;
 
 // Generate description from genres if not provided
 const genres = (data.genres || []) as string[];
@@ -37,7 +54,7 @@ const autoDescription = description || `${title} - ${genres.slice(0, 3).join(', 
 
     <!-- Infobox (right) -->
     <aside class="wiki-infobox">
-      <Infobox title={title} data={data} />
+      <Infobox title={title} data={data} connections={connections} artistSlug={artistSlug} />
     </aside>
 
     <!-- Article Content -->

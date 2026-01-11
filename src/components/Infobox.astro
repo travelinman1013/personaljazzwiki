@@ -4,13 +4,41 @@
  * Wikipedia-style sidebar with art deco influences
  * Features brass accents, warm lighting effects, and electric hover states
  */
+import MiniConnectionGraph from './artist/MiniConnectionGraph.astro';
+
+interface MusicalConnections {
+  collaborators?: string[];
+  influenced?: string[];
+  mentors?: string[];
+}
+
+interface ReverseConnections {
+  collaboratedWith?: string[];
+  influencedBy?: string[];
+  mentoredBy?: string[];
+}
 
 interface Props {
   title: string;
   data: Record<string, unknown>;
+  connections?: {
+    forward?: MusicalConnections;
+    reverse?: ReverseConnections;
+  };
+  artistSlug?: string;
 }
 
-const { title, data } = Astro.props;
+const { title, data, connections, artistSlug } = Astro.props;
+
+// Check if artist has connections for mini graph
+const hasConnections = connections && (
+  (connections.forward?.collaborators?.length ?? 0) > 0 ||
+  (connections.forward?.influenced?.length ?? 0) > 0 ||
+  (connections.forward?.mentors?.length ?? 0) > 0 ||
+  (connections.reverse?.collaboratedWith?.length ?? 0) > 0 ||
+  (connections.reverse?.influencedBy?.length ?? 0) > 0 ||
+  (connections.reverse?.mentoredBy?.length ?? 0) > 0
+);
 
 // Extract infobox data
 const infobox = data.infobox as Record<string, unknown> | undefined;
@@ -377,6 +405,11 @@ const toSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').
           </div>
         )}
       </div>
+    )}
+
+    <!-- Mini Connection Graph -->
+    {hasConnections && artistSlug && (
+      <MiniConnectionGraph connections={connections} artistSlug={artistSlug} />
     )}
 
     <!-- External Links -->

@@ -1,0 +1,267 @@
+---
+/**
+ * MiniConnectionGraph - Small preview graph for Infobox
+ *
+ * Displays a compact, non-interactive version of the connection graph.
+ * Clickable to scroll to the full graph section.
+ */
+
+interface MusicalConnections {
+  collaborators?: string[];
+  influenced?: string[];
+  mentors?: string[];
+}
+
+interface ReverseConnections {
+  collaboratedWith?: string[];
+  influencedBy?: string[];
+  mentoredBy?: string[];
+}
+
+interface Props {
+  connections: {
+    forward?: MusicalConnections;
+    reverse?: ReverseConnections;
+  };
+  artistSlug: string;
+}
+
+const { connections, artistSlug } = Astro.props;
+
+// Build simplified graph data
+interface MiniNode {
+  id: string;
+  type: 'center' | 'collaborator' | 'influenced' | 'mentor' | 'collaboratedWith' | 'influencedBy' | 'mentoredBy';
+}
+
+interface MiniLink {
+  source: string;
+  target: string;
+  type: string;
+}
+
+const nodes: MiniNode[] = [];
+const links: MiniLink[] = [];
+const nodeIds = new Set<string>();
+
+// Add center node
+nodes.push({ id: artistSlug, type: 'center' });
+nodeIds.add(artistSlug);
+
+// Process forward connections
+const forward = connections.forward || {};
+
+(forward.collaborators || []).forEach((name, i) => {
+  const id = `collab-${i}`;
+  if (!nodeIds.has(id)) {
+    nodes.push({ id, type: 'collaborator' });
+    nodeIds.add(id);
+  }
+  links.push({ source: artistSlug, target: id, type: 'collaborator' });
+});
+
+(forward.influenced || []).forEach((name, i) => {
+  const id = `inf-${i}`;
+  if (!nodeIds.has(id)) {
+    nodes.push({ id, type: 'influenced' });
+    nodeIds.add(id);
+  }
+  links.push({ source: artistSlug, target: id, type: 'influenced' });
+});
+
+(forward.mentors || []).forEach((name, i) => {
+  const id = `mentor-${i}`;
+  if (!nodeIds.has(id)) {
+    nodes.push({ id, type: 'mentor' });
+    nodeIds.add(id);
+  }
+  links.push({ source: id, target: artistSlug, type: 'mentor' });
+});
+
+// Process reverse connections
+const reverse = connections.reverse || {};
+
+(reverse.collaboratedWith || []).forEach((slug, i) => {
+  const id = `collab-rev-${i}`;
+  if (!nodeIds.has(id)) {
+    nodes.push({ id, type: 'collaboratedWith' });
+    nodeIds.add(id);
+  }
+  links.push({ source: id, target: artistSlug, type: 'collaboratedWith' });
+});
+
+(reverse.influencedBy || []).forEach((slug, i) => {
+  const id = `inf-rev-${i}`;
+  if (!nodeIds.has(id)) {
+    nodes.push({ id, type: 'influencedBy' });
+    nodeIds.add(id);
+  }
+  links.push({ source: artistSlug, target: id, type: 'influencedBy' });
+});
+
+(reverse.mentoredBy || []).forEach((slug, i) => {
+  const id = `mentor-rev-${i}`;
+  if (!nodeIds.has(id)) {
+    nodes.push({ id, type: 'mentoredBy' });
+    nodeIds.add(id);
+  }
+  links.push({ source: artistSlug, target: id, type: 'mentoredBy' });
+});
+
+// Check if there are any connections
+const hasConnections = links.length > 0;
+
+// Serialize for client-side
+const graphData = JSON.stringify({ nodes, links });
+---
+
+{hasConnections && (
+  <a href="#connections" class="mini-graph-link" aria-label="View connection network">
+    <div class="mini-graph-container" id="mini-connection-graph">
+      <svg></svg>
+    </div>
+    <span class="mini-graph-label">
+      <svg class="mini-graph-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="3"/>
+        <circle cx="5" cy="6" r="2"/>
+        <circle cx="19" cy="6" r="2"/>
+        <circle cx="5" cy="18" r="2"/>
+        <circle cx="19" cy="18" r="2"/>
+        <line x1="9.5" y1="10" x2="6.5" y2="7.5"/>
+        <line x1="14.5" y1="10" x2="17.5" y2="7.5"/>
+        <line x1="9.5" y1="14" x2="6.5" y2="16.5"/>
+        <line x1="14.5" y1="14" x2="17.5" y2="16.5"/>
+      </svg>
+      Connections
+    </span>
+  </a>
+)}
+
+<script define:vars={{ graphData, artistSlug }}>
+  window.__miniGraphData = JSON.parse(graphData);
+  window.__miniArtistSlug = artistSlug;
+</script>
+
+<script type="module">
+  (async () => {
+    const d3 = await import('https://cdn.jsdelivr.net/npm/d3@7/+esm');
+
+    const data = window.__miniGraphData;
+    const centerSlug = window.__miniArtistSlug;
+
+    if (!data || data.links.length === 0) return;
+
+    const container = document.getElementById('mini-connection-graph');
+    if (!container) return;
+
+    const svg = d3.select('#mini-connection-graph svg');
+    const width = 120;
+    const height = 100;
+
+    svg.attr('width', width).attr('height', height).attr('viewBox', [0, 0, width, height]);
+
+    // Color scheme
+    const colors = {
+      center: '#f59e0b',
+      collaborator: '#06b6d4',
+      influenced: '#a855f7',
+      mentor: '#eab308',
+      collaboratedWith: '#06b6d4',
+      influencedBy: '#a855f7',
+      mentoredBy: '#eab308'
+    };
+
+    // Create force simulation with smaller forces for compact layout
+    const simulation = d3.forceSimulation(data.nodes)
+      .force('link', d3.forceLink(data.links).id(d => d.id).distance(25))
+      .force('charge', d3.forceManyBody().strength(-30))
+      .force('center', d3.forceCenter(width / 2, height / 2))
+      .force('collision', d3.forceCollide().radius(8));
+
+    const g = svg.append('g');
+
+    // Draw links
+    const link = g.append('g')
+      .selectAll('line')
+      .data(data.links)
+      .join('line')
+      .attr('stroke', d => colors[d.type] || '#666')
+      .attr('stroke-opacity', 0.4)
+      .attr('stroke-width', 1);
+
+    // Draw nodes (smaller for mini graph)
+    const node = g.append('g')
+      .selectAll('circle')
+      .data(data.nodes)
+      .join('circle')
+      .attr('r', d => d.type === 'center' ? 6 : 4)
+      .attr('fill', d => colors[d.type] || '#666')
+      .attr('stroke', 'var(--color-bg-infobox, #1a1a2e)')
+      .attr('stroke-width', 1);
+
+    // Simulation tick
+    simulation.on('tick', () => {
+      link
+        .attr('x1', d => d.source.x)
+        .attr('y1', d => d.source.y)
+        .attr('x2', d => d.target.x)
+        .attr('y2', d => d.target.y);
+
+      node
+        .attr('cx', d => d.x)
+        .attr('cy', d => d.y);
+    });
+
+    // Stop simulation after initial layout settles
+    simulation.alpha(0.5).restart();
+    setTimeout(() => simulation.stop(), 1500);
+  })();
+</script>
+
+<style>
+  .mini-graph-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border-top: 1px solid var(--color-border-light);
+    text-decoration: none;
+    color: var(--color-text-secondary);
+    transition: all var(--duration-fast) var(--ease-smooth);
+  }
+
+  .mini-graph-link:hover {
+    background: var(--color-accent-light);
+    color: var(--color-link-hover);
+  }
+
+  .mini-graph-container {
+    width: 120px;
+    height: 100px;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+
+  .mini-graph-container svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .mini-graph-label {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .mini-graph-icon {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+</style>
