@@ -47,12 +47,19 @@ const musicalConnections = artistRow.musical_connections ? JSON.parse(artistRow.
 const discographySummary = artistRow.discography_summary ? JSON.parse(artistRow.discography_summary) : null;
 const socialLinks = artistRow.social_links ? JSON.parse(artistRow.social_links) : null;
 
+// Parse new fields for origin, birth_place, and research sources
+const origin = artistRow.origin || null;
+const birthPlace = artistRow.birth_place || null;
+let researchSources: string[] = artistRow.research_sources ? JSON.parse(artistRow.research_sources) : [];
+
 // Build the data object that Infobox expects
 const data: Record<string, unknown> = {
   title: artistRow.title,
   artist_type: artistRow.artist_type,
   birth_date: artistRow.birth_date,
   death_date: artistRow.death_date,
+  origin,
+  birth_place: birthPlace,
   genres,
   instruments,
   roles,
@@ -76,6 +83,28 @@ const data: Record<string, unknown> = {
 
 // Get bio HTML content
 let htmlContent = artistRow.bio_html || '';
+
+// Remove redundant Quick Info section (data is in infobox)
+htmlContent = htmlContent.replace(/<h2[^>]*>Quick Info<\/h2>\s*<ul>[\s\S]*?<\/ul>/gi, '');
+
+// Extract research sources from bio_html (fallback if not in DB)
+if (researchSources.length === 0) {
+  const sourcesMatch = htmlContent.match(/<p><em>Sources:[\s\S]*?<\/em><\/p>/i);
+  if (sourcesMatch) {
+    const hrefRegex = /href="([^"]+)"/g;
+    let match;
+    while ((match = hrefRegex.exec(sourcesMatch[0])) !== null) {
+      const url = match[1];
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        researchSources.push(url);
+      }
+    }
+  }
+}
+
+// Remove Perplexity attribution and source lines from body (will show in References section)
+htmlContent = htmlContent.replace(/<p><em>Enhanced with Perplexity AI research<\/em><\/p>/gi, '');
+htmlContent = htmlContent.replace(/<p><em>Sources:[\s\S]*?<\/em><\/p>/gi, '');
 
 // Process wiki links in bio_html: [[Artist Name|Display Text]] -> HTML links
 // First, we need to get all artist slugs for red link detection
@@ -113,6 +142,11 @@ while ((headingMatch = headingRegex.exec(htmlContent)) !== null) {
   headings.push({ id: headingMatch[1], text: headingMatch[2] });
 }
 
+// Add References to TOC if we have sources
+if (researchSources.length > 0) {
+  headings.push({ id: 'references', text: 'References' });
+}
+
 // Get title with fallback
 const title = artistRow.title || slug.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
 
@@ -147,6 +181,28 @@ Astro.response.headers.set(
 
 <WikiArticle title={title} data={data} headings={headings} connections={artistConnections} artistSlug={slug}>
   <Fragment set:html={htmlContent} />
+
+  {/* References Section - Perplexity research sources */}
+  {researchSources.length > 0 && (
+    <section class="references-section">
+      <h2 id="references">References</h2>
+      <ol class="references-list">
+        {researchSources.map((url, i) => {
+          let displayName = url;
+          try {
+            displayName = new URL(url).hostname.replace('www.', '');
+          } catch {
+            // Keep original if URL parsing fails
+          }
+          return (
+            <li id={`ref-${i + 1}`}>
+              <a href={url} target="_blank" rel="noopener noreferrer">{displayName}</a>
+            </li>
+          );
+        })}
+      </ol>
+    </section>
+  )}
 
   {/* WWOZ Plays Section */}
   <WWOZPlays artistSlug={slug} artistName={title} />

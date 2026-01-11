@@ -48,15 +48,21 @@ const spotifyData = data.spotify_data as { popularity?: number; followers?: numb
 const getTypeAccent = (background?: string) => {
   switch (background) {
     case 'solo_singer':
-      return { accent: 'singer', color: 'var(--jazz-amber)', label: 'Vocalist' };
+    case 'person':
+      return { accent: 'singer', color: 'var(--jazz-amber)', label: 'Artist' };
     case 'instrumentalist':
       return { accent: 'instrumentalist', color: 'var(--electric-cyan)', label: 'Instrumentalist' };
     case 'group_or_band':
+    case 'band':
+    case 'group':
       return { accent: 'band', color: 'var(--electric-purple)', label: 'Group' };
     default:
       return { accent: 'default', color: 'var(--jazz-brass)', label: null };
   }
 };
+
+// Check if this is a band/group (for Born vs Formed logic)
+const isBand = (bg?: string) => bg === 'band' || bg === 'group' || bg === 'group_or_band';
 
 const background = infobox?.background as string | undefined;
 const typeInfo = getTypeAccent(background);
@@ -79,7 +85,9 @@ const formatDate = (date: string | undefined) => {
 const birthName = (data.birth_name || infobox?.birth_name) as string | undefined;
 const birthDate = (data.birth_date || infobox?.born) as string | undefined;
 const birthPlace = data.birth_place as string | undefined;
+const origin = data.origin as string | undefined;
 const deathDate = (data.death_date || infobox?.died) as string | undefined;
+const artistIsBand = isBand(background);
 const genres = (data.genres || []) as string[];
 const roles = (data.roles || []) as string[];
 const careerSpan = data.career_span as string | undefined;
@@ -212,13 +220,30 @@ const toSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').
           </tr>
         )}
 
-        {birthDate && (
+        {/* For individuals: show "Born" with birth date and birthPlace */}
+        {!artistIsBand && birthDate && (
           <tr>
             <th>Born</th>
             <td>
               {formatDate(birthDate)}
               {birthPlace && <span class="text-muted"><br />{birthPlace}</span>}
             </td>
+          </tr>
+        )}
+
+        {/* For bands: show "Formed" with formation year */}
+        {artistIsBand && birthDate && (
+          <tr>
+            <th>Formed</th>
+            <td>{formatDate(birthDate)}</td>
+          </tr>
+        )}
+
+        {/* Origin row - for bands */}
+        {artistIsBand && origin && (
+          <tr>
+            <th>Origin</th>
+            <td>{origin}</td>
           </tr>
         )}
 
