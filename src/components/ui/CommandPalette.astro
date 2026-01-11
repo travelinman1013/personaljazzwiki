@@ -19,7 +19,7 @@
           type="text"
           id="palette-input"
           class="palette-input"
-          placeholder="Search artists, genres, instruments..."
+          placeholder="Search artists, genres, roles..."
           autocomplete="off"
           spellcheck="false"
         />
@@ -41,9 +41,9 @@
           <span class="palette-item-icon">&#127926;</span>
           <span class="palette-item-text">Explore Genres</span>
         </a>
-        <a href="/instruments" class="palette-item" data-palette-item>
+        <a href="/roles" class="palette-item" data-palette-item>
           <span class="palette-item-icon">&#127927;</span>
-          <span class="palette-item-text">Browse Instruments</span>
+          <span class="palette-item-text">Browse Roles</span>
         </a>
         <a href="/random" class="palette-item" data-palette-item>
           <span class="palette-item-icon">&#127922;</span>
@@ -613,7 +613,7 @@
           let icon = '&#9835;'; // Default music note
           if (result.url?.includes('/genres/')) {
             icon = '&#127926;';
-          } else if (result.url?.includes('/instruments/')) {
+          } else if (result.url?.includes('/roles/')) {
             icon = '&#127927;';
           }
 
