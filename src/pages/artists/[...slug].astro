@@ -84,6 +84,12 @@ const data: Record<string, unknown> = {
 // Get bio HTML content
 let htmlContent = artistRow.bio_html || '';
 
+// Remove the h1 title from bio (it's already in the page header)
+htmlContent = htmlContent.replace(/<h1[^>]*>[^<]*<\/h1>/gi, '');
+
+// Remove portrait image paragraph from the start (image is in infobox)
+htmlContent = htmlContent.replace(/^(\s*<p>\s*<img[^>]*>\s*<\/p>\s*)/i, '');
+
 // Remove redundant Quick Info section (data is in infobox)
 htmlContent = htmlContent.replace(/<h2[^>]*>Quick Info<\/h2>\s*<ul>[\s\S]*?<\/ul>/gi, '');
 
@@ -172,6 +178,29 @@ const nameToSlug = (connectionsIndex as any).nameToSlug || {};
 // If so, the graph will be rendered as a subsection (no h2)
 const bioHasMusicalConnections = /<h2[^>]*>Musical Connections<\/h2>/i.test(htmlContent);
 
+// Split content to insert Connection Graph after Musical Connections section
+// Find the h2 that comes after Musical Connections (usually Discography or External Links)
+let contentBeforeGraph = htmlContent;
+let contentAfterGraph = '';
+
+if (bioHasMusicalConnections && hasConnections) {
+  // Find the position after Musical Connections section ends
+  // Look for the next h2 after "Musical Connections"
+  const musicalConnectionsMatch = htmlContent.match(/<h2[^>]*>Musical Connections<\/h2>/i);
+  if (musicalConnectionsMatch) {
+    const mcIndex = htmlContent.indexOf(musicalConnectionsMatch[0]);
+    const afterMC = htmlContent.substring(mcIndex + musicalConnectionsMatch[0].length);
+
+    // Find the next h2 (end of Musical Connections section)
+    const nextH2Match = afterMC.match(/<h2[^>]*>/i);
+    if (nextH2Match) {
+      const splitPoint = mcIndex + musicalConnectionsMatch[0].length + afterMC.indexOf(nextH2Match[0]);
+      contentBeforeGraph = htmlContent.substring(0, splitPoint);
+      contentAfterGraph = htmlContent.substring(splitPoint);
+    }
+  }
+}
+
 // Set cache headers for stale-while-revalidate caching
 Astro.response.headers.set(
   'Cache-Control',
@@ -180,7 +209,22 @@ Astro.response.headers.set(
 ---
 
 <WikiArticle title={title} data={data} headings={headings} connections={artistConnections} artistSlug={slug}>
-  <Fragment set:html={htmlContent} />
+  {/* Content before the Connection Graph (Bio through Musical Connections text) */}
+  <Fragment set:html={contentBeforeGraph} />
+
+  {/* Connection Graph - rendered after Musical Connections text, before Discography */}
+  {hasConnections && (
+    <ConnectionGraph
+      artistSlug={slug}
+      artistName={title}
+      connections={artistConnections}
+      nameToSlug={nameToSlug}
+      showHeading={!bioHasMusicalConnections}
+    />
+  )}
+
+  {/* Content after the Connection Graph (Discography, External Links, etc.) */}
+  {contentAfterGraph && <Fragment set:html={contentAfterGraph} />}
 
   {/* References Section - Perplexity research sources */}
   {researchSources.length > 0 && (
@@ -206,18 +250,6 @@ Astro.response.headers.set(
 
   {/* WWOZ Plays Section */}
   <WWOZPlays artistSlug={slug} artistName={title} />
-
-  {/* Connection Graph - only if connections exist */}
-  {/* If bio already has Musical Connections section, render graph as subsection */}
-  {hasConnections && (
-    <ConnectionGraph
-      artistSlug={slug}
-      artistName={title}
-      connections={artistConnections}
-      nameToSlug={nameToSlug}
-      showHeading={!bioHasMusicalConnections}
-    />
-  )}
 </WikiArticle>
 
 <style is:global>
