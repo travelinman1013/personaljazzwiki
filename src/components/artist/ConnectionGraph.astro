@@ -143,11 +143,11 @@ const graphData = JSON.stringify({ nodes, links });
 ---
 
 {hasConnections && (
-  <section class="connection-graph-section">
+  <section class="connection-graph-section" id="connections">
     {showHeading ? (
-      <h2 id="connections">Musical Connections</h2>
+      <h2>Musical Connections</h2>
     ) : (
-      <h3 id="connection-network" class="graph-subheading">Connection Network</h3>
+      <h3 class="graph-subheading">Connection Network</h3>
     )}
 
     <div class="graph-controls">
@@ -493,6 +493,7 @@ const graphData = JSON.stringify({ nodes, links });
     margin-top: 2rem;
     padding-top: 1.5rem;
     border-top: 1px solid var(--color-border);
+    scroll-margin-top: 5rem;
   }
 
   /* When used as subsection (no h2), reduce top styling */
