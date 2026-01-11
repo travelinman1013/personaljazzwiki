@@ -4,65 +4,133 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Jazzapedia is a Wikipedia-style encyclopedia for 3,400+ musician profiles. Built with Astro, it generates ~4,000 HTML pages from markdown files stored in an Obsidian vault.
+Jazzapedia is a Wikipedia-style encyclopedia for 4,000+ musician profiles. Built with Astro in SSR mode, it serves pages dynamically from a Cloudflare D1 database.
 
 **Live Site:** https://jazzapedia.com
 
-## Project Location
+**Stats:** 4,015 artists, 456 genres, 148 instruments
 
-This web app lives **outside** the Obsidian vault to avoid sync overhead from node_modules, dist, and build artifacts.
+## Architecture
 
-- **Web App:** `/Users/maxwell/Projects/artistWiki_Web/`
-- **Artist Source:** `/Users/maxwell/LETSGO/MaxVault/01_Projects/PersonalArtistWiki/Artists/`
-- **Portrait Source:** `/Users/maxwell/LETSGO/MaxVault/03_Resources/source_material/ArtistPortraits/`
+### Server-Side Rendering (SSR)
 
-Content is synced from the Obsidian vault on demand via `./scripts/sync-content.sh`.
+The site uses Astro with `output: 'server'` and the `@astrojs/cloudflare` adapter. All pages query the D1 database at request time rather than being pre-built.
+
+### Cloudflare Stack
+
+- **Pages**: Hosts the Astro SSR application
+- **D1**: SQLite database storing all artist data
+- **R2**: Object storage for artist portraits at `media.jazzapedia.com`
+
+### Database Access
+
+Pages access D1 via runtime bindings:
+```typescript
+const db = Astro.locals.runtime?.env?.DB;
+const result = await db.prepare('SELECT * FROM artists WHERE slug = ?').bind(slug).first();
+```
+
+### Key Files
+
+- `wrangler.toml` - D1 binding config (must have `pages_build_output_dir` for Pages)
+- `astro.config.mjs` - SSR config with Cloudflare adapter
+- `src/pages/` - All route handlers querying D1
 
 ## Commands
 
 ```bash
-npm run dev          # Start dev server at localhost:4321
-npm run build        # Build static site to ./dist/
-npm run build:prod   # Full build: sync content + build + Pagefind indexing
+npm run dev          # Start dev server (uses wrangler for D1 proxy)
+npm run build        # Build SSR bundle to ./dist/
 npm run preview      # Preview built site
-npm run sync         # Sync artist content from Obsidian vault
 ```
 
-For production deployment:
+For deployment:
 ```bash
-npm run build:prod
+npm run build
+npx pagefind --site dist
 npx wrangler pages deploy dist --project-name jazzapedia
 ```
 
-## Architecture
+## Database Schema
 
-### Content Pipeline
+### artists table
+```sql
+CREATE TABLE artists (
+  slug TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  artist_type TEXT,
+  birth_date TEXT,
+  death_date TEXT,
+  genres TEXT,           -- JSON array
+  instruments TEXT,      -- JSON array
+  spotify_data TEXT,     -- JSON object
+  audio_profile TEXT,    -- JSON object
+  musical_connections TEXT,  -- JSON object
+  external_urls TEXT,    -- JSON object
+  content TEXT,          -- Markdown body
+  image_filename TEXT,
+  updated_at TEXT
+);
+```
 
-Artist markdown files live in an external Obsidian vault (`/Artists/`) and are synced into `src/content/artists/` via shell scripts. The sync is required before building because the content is not committed to the repo (it's gitignored).
+### genres / instruments tables
+```sql
+CREATE TABLE genres (
+  name TEXT PRIMARY KEY,
+  slug TEXT UNIQUE,
+  artist_count INTEGER DEFAULT 0
+);
+```
 
-**Custom Content Loader** (`src/content/config.ts`): Uses a custom Astro loader with `gray-matter` to read frontmatter only. This bypasses Astro's image processing which fails on markdown images in the artist files. The raw markdown body is stored in `_rawBody` and rendered separately with `marked`.
+## Page Patterns
 
-**Image Handling**: Image optimization is disabled (`astro/assets/services/noop`) because artist portraits are served statically from `public/portraits/`. A Vite plugin skips resolution of images in artist content.
+All SSR pages follow this pattern:
+```typescript
+// Access D1 binding
+const db = Astro.locals.runtime?.env?.DB;
+const R2_URL = Astro.locals.runtime?.env?.R2_PUBLIC_URL || 'https://media.jazzapedia.com';
 
-### Page Generation
+if (db) {
+  const result = await db.prepare('...').bind(...).all();
+  // process result.results
+} else {
+  errorMessage = 'Database not available';
+}
+```
 
-- **Dynamic Routes**: `/artists/[...slug].astro`, `/genres/[genre].astro`, `/instruments/[instrument].astro`
-- **Browse Pages**: Index pages for artists (A-Z navigation), genres, and instruments
-- **Search**: Client-side full-text search via Pagefind (runs post-build)
+## Image URLs
 
-### Key Components
+Portraits are served from R2:
+```typescript
+const portraitUrl = `${R2_URL}/portraits/${artist.image_filename}`;
+// Example: https://media.jazzapedia.com/portraits/miles-davis.jpg
+```
 
-- `Layout.astro` - Base layout with nav, footer
-- `WikiArticle.astro` - Two-column layout with floated infobox
-- `Infobox.astro` - Wikipedia-style sidebar (bio, genres, Spotify stats, external links)
+## Caching
 
-### Wiki Links
+Pages set cache headers for edge caching:
+```typescript
+Astro.response.headers.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
+```
 
-`remark-wiki-link` converts Obsidian-style `[[Artist Name|Display Text]]` links to `/artists/artist-name` URLs.
+## Deployment
 
-## Content Schema
+GitHub Actions workflow (`.github/workflows/deploy.yml`) runs on push to master:
+1. `npm ci` - Install dependencies
+2. `npm run build` - Build Astro SSR bundle
+3. `npx pagefind --site dist` - Generate search index
+4. `npx wrangler pages deploy dist --project-name jazzapedia` - Deploy with D1 binding
 
-Artist frontmatter includes: `title`, `artist_type`, `birth_date`, `death_date`, `genres[]`, `instruments[]`, `spotify_data`, `audio_profile`, `musical_connections`, `external_urls`. The schema uses `.passthrough()` to allow any additional fields.
+The `wrangler.toml` must include `pages_build_output_dir = "dist"` for D1 bindings to work with Pages deployments.
+
+## Local Development
+
+For local dev with D1 access:
+```bash
+npm run dev  # Uses wrangler's platformProxy to connect to D1
+```
+
+The dev server proxies D1 requests through wrangler, allowing local testing against the production database.
 
 ## Spotify Metadata Enrichment
 
@@ -74,18 +142,22 @@ A local Spotify database (Anna's Archive dump) is available for enriching artist
 - `spotify-matcher.py` - Maps wiki artists to Spotify IDs
 - `download-portraits.py` - Downloads missing artist portraits
 - `update-genres.py` - Replaces genres with Spotify data
-- `fix-portrait-case.py` - Fixes filename case mismatches
-
-```bash
-source .venv/bin/activate
-python scripts/spotify-matcher.py
-python scripts/download-portraits.py
-python scripts/update-genres.py
-npm run sync
-```
 
 See `~/.claude/skills/spotify-metadata.md` for full database schema and query examples.
 
-## Deployment
+## Common Tasks
 
-GitHub repo: `travelinman1013/jazzapedia`. Cloudflare Pages deployment via GitHub Actions. See `DEPLOYMENT.md` for setup instructions including required secrets (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`).
+### Adding a new page
+1. Create `.astro` file in `src/pages/`
+2. Access D1 via `Astro.locals.runtime?.env?.DB`
+3. Set appropriate cache headers
+4. Handle `db` being undefined gracefully
+
+### Modifying database schema
+1. Create migration in `migrations/`
+2. Apply locally: `npx wrangler d1 execute jazzapedia --file=migrations/XXX.sql`
+3. Apply to production: `npx wrangler d1 execute jazzapedia --file=migrations/XXX.sql --remote`
+
+### Updating wrangler.toml
+- Keep `pages_build_output_dir = "dist"` - required for D1 bindings
+- D1 binding must use `binding = "DB"` to match code expectations
