@@ -39,10 +39,13 @@ if (!artistRow) {
 // Parse JSON fields from D1
 const genres = artistRow.genres ? JSON.parse(artistRow.genres) : [];
 const instruments = artistRow.instruments ? JSON.parse(artistRow.instruments) : [];
+const roles = artistRow.roles ? JSON.parse(artistRow.roles) : [];
 const spotifyData = artistRow.spotify_data ? JSON.parse(artistRow.spotify_data) : null;
 const audioProfile = artistRow.audio_profile ? JSON.parse(artistRow.audio_profile) : null;
 const externalUrls = artistRow.external_urls ? JSON.parse(artistRow.external_urls) : null;
 const musicalConnections = artistRow.musical_connections ? JSON.parse(artistRow.musical_connections) : null;
+const discographySummary = artistRow.discography_summary ? JSON.parse(artistRow.discography_summary) : null;
+const socialLinks = artistRow.social_links ? JSON.parse(artistRow.social_links) : null;
 
 // Build the data object that Infobox expects
 const data: Record<string, unknown> = {
@@ -52,10 +55,16 @@ const data: Record<string, unknown> = {
   death_date: artistRow.death_date,
   genres,
   instruments,
+  roles,
   spotify_data: spotifyData,
   audio_profile: audioProfile,
   external_urls: externalUrls,
   musical_connections: musicalConnections,
+  discography_summary: discographySummary,
+  social_links: socialLinks,
+  career_span: artistRow.career_span,
+  is_active: artistRow.is_active !== 0,
+  primary_role: artistRow.primary_role,
   // For portrait in Infobox
   image_path: artistRow.image_filename ? `/portraits/${artistRow.image_filename}` : undefined,
   // Infobox also checks infobox.background for artist type styling

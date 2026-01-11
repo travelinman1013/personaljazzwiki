@@ -53,16 +53,71 @@ const birthDate = (data.birth_date || infobox?.born) as string | undefined;
 const birthPlace = data.birth_place as string | undefined;
 const deathDate = (data.death_date || infobox?.died) as string | undefined;
 const genres = (data.genres || []) as string[];
-const instruments = (data.instruments || []) as string[];
+const roles = (data.roles || []) as string[];
+const careerSpan = data.career_span as string | undefined;
+const isActive = data.is_active !== false && !deathDate;
+const discographySummary = data.discography_summary as {
+  albums?: number;
+  singles?: number;
+  compilations?: number;
+  first_year?: string;
+  latest_year?: string;
+} | undefined;
+const audioProfile = data.audio_profile as {
+  energy_avg?: number;
+  valence_avg?: number;
+  danceability_avg?: number;
+  tempo_avg?: number;
+  acousticness_avg?: number;
+  instrumentalness_avg?: number;
+} | undefined;
+const socialLinks = data.social_links as {
+  instagram?: string;
+  twitter?: string;
+  tiktok?: string;
+  website?: string;
+  allmusic?: string;
+  discogs?: string;
+  bandcamp?: string;
+} | undefined;
 const yearsActive = data.years_active as string | undefined;
 const occupation = (data.occupation || []) as string[];
 const recordLabels = (data.record_labels || []) as string[];
+
+// Instruments - filter out garbage credit types, only keep real instruments
+const rawInstruments = (data.instruments || []) as string[];
+const NON_INSTRUMENTS = new Set([
+  // Credit types from MusicBrainz
+  'original', 'eponymous', 'additional', 'guest', 'featured',
+  // Vocal types (not instruments)
+  'lead vocals', 'background vocals', 'spoken vocals', 'other vocals',
+  'vocals', 'backing vocals', 'lead voice', 'voice',
+  // Production/other roles
+  'producer', 'programming', 'additional production',
+  'mix', 'remix', 'mastering', 'engineer',
+]);
+const instruments = rawInstruments.filter(inst =>
+  !NON_INSTRUMENTS.has(inst.toLowerCase()) && inst.length > 1
+);
 const aliases = (data.aliases || data.also_known_as || []) as string[];
 const spouse = (data.spouse || []) as string[];
 const rawAssociatedActs = (data.associated_acts || []) as Array<string | { name?: string }>;
 const associatedActs = rawAssociatedActs.map(act =>
   typeof act === 'string' ? act : (act.name || '')
 ).filter(Boolean);
+
+// Audio profile helpers
+const getEnergyLabel = (energy: number) => {
+  if (energy >= 0.7) return 'High';
+  if (energy >= 0.4) return 'Med';
+  return 'Low';
+};
+
+const getMoodLabel = (valence: number) => {
+  if (valence >= 0.6) return 'Upbeat';
+  if (valence >= 0.4) return 'Balanced';
+  return 'Dark';
+};
 
 // Get image path
 const rawImagePath = (data.image_path || infobox?.image) as string | undefined;
@@ -160,16 +215,52 @@ const toSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').
           </tr>
         )}
 
+        {roles.length > 0 && (
+          <tr>
+            <th>Roles</th>
+            <td>
+              <div class="tag-list">
+                {roles.slice(0, 3).map(role => (
+                  <a href={`/roles/${toSlug(role)}`} class="tag">{role}</a>
+                ))}
+                {roles.length > 3 && <span class="tag-more">+{roles.length - 3}</span>}
+              </div>
+            </td>
+          </tr>
+        )}
+
         {instruments.length > 0 && (
           <tr>
             <th>Instruments</th>
             <td>
               <div class="tag-list">
-                {instruments.slice(0, 3).map(instrument => (
-                  <a href={`/instruments/${toSlug(instrument)}`} class="tag">{instrument}</a>
+                {instruments.slice(0, 4).map(instrument => (
+                  <span class="tag instrument-tag">{instrument}</span>
                 ))}
-                {instruments.length > 3 && <span class="tag-more">+{instruments.length - 3}</span>}
+                {instruments.length > 4 && <span class="tag-more">+{instruments.length - 4}</span>}
               </div>
+            </td>
+          </tr>
+        )}
+
+        {(careerSpan || isActive) && (
+          <tr>
+            <th>Career</th>
+            <td>
+              {careerSpan && <span class="font-mono">{careerSpan}</span>}
+              {isActive && <span class="active-badge">Active</span>}
+            </td>
+          </tr>
+        )}
+
+        {discographySummary && (discographySummary.albums || 0) > 0 && (
+          <tr>
+            <th>Discography</th>
+            <td>
+              <span class="font-mono">
+                {discographySummary.albums} albums
+                {(discographySummary.singles || 0) > 0 && `, ${discographySummary.singles} singles`}
+              </span>
             </td>
           </tr>
         )}
@@ -249,25 +340,113 @@ const toSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').
       </div>
     )}
 
-    <!-- External Links -->
-    {externalUrls && (externalUrls.wikipedia || externalUrls.musicbrainz || externalUrls.spotify) && (
-      <div class="external-links">
-        {externalUrls.wikipedia && (
-          <a href={externalUrls.wikipedia} target="_blank" rel="noopener noreferrer" class="external-link" title="Wikipedia">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12.09 13.119c-.936 1.932-2.217 4.548-2.853 5.728-.616 1.074-1.127.931-1.532.029-1.406-3.321-4.293-9.144-5.651-12.409-.251-.601-.441-.987-.619-1.139-.181-.15-.554-.24-1.122-.271C.103 5.033 0 4.982 0 4.898v-.455l.052-.045c.924-.005 5.401 0 5.401 0l.051.045v.434c0 .119-.075.176-.225.176l-.564.031c-.485.029-.727.164-.727.436 0 .135.053.33.166.601 1.082 2.646 4.818 10.521 4.818 10.521l.136.046 2.411-4.81-.482-1.067-1.658-3.264s-.318-.654-.428-.872c-.728-1.443-.712-1.518-1.447-1.617-.207-.023-.313-.05-.313-.149v-.468l.06-.045h4.292l.113.037v.451c0 .105-.076.15-.227.15l-.308.047c-.792.061-.661.381-.136 1.422l1.582 3.252 1.758-3.504c.293-.64.233-.801.111-.947-.07-.084-.305-.22-.812-.24l-.201-.021c-.052 0-.098-.015-.145-.051-.045-.031-.067-.076-.067-.129v-.427l.061-.045c1.247-.008 4.043 0 4.043 0l.059.045v.436c0 .121-.059.178-.193.178-.646.03-.782.095-1.023.439-.12.186-.375.589-.646 1.039l-2.301 4.273-.065.135 2.792 5.712.17.048 4.396-10.438c.154-.422.129-.722-.064-.895-.197-.172-.346-.273-.857-.295l-.42-.016c-.061 0-.105-.014-.152-.045-.043-.029-.072-.075-.072-.119v-.436l.059-.045h4.961l.041.045v.437c0 .119-.074.18-.209.18-.648.03-1.127.18-1.443.421-.314.255-.557.616-.736 1.067 0 0-4.043 9.258-5.426 12.339-.525 1.007-1.053.917-1.503-.031-.571-1.171-1.773-3.786-2.646-5.71l.053-.036z"/>
-            </svg>
-          </a>
+    <!-- Audio Profile Section -->
+    {audioProfile && (audioProfile.energy_avg !== undefined || audioProfile.valence_avg !== undefined) && (
+      <div class="audio-profile-section">
+        <div class="audio-profile-header">
+          <svg class="audio-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+          </svg>
+          <span>Sound Profile</span>
+        </div>
+
+        {audioProfile.energy_avg !== undefined && (
+          <div class="profile-stat">
+            <span class="profile-label">Energy</span>
+            <div class="profile-bar">
+              <div class="profile-fill energy" style={`--value: ${audioProfile.energy_avg * 100}%`}></div>
+            </div>
+            <span class="profile-value">{getEnergyLabel(audioProfile.energy_avg)}</span>
+          </div>
         )}
-        {externalUrls.musicbrainz && (
-          <a href={externalUrls.musicbrainz} target="_blank" rel="noopener noreferrer" class="external-link" title="MusicBrainz">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M0 0v24h24V0H0zm5.441 4.16h2.248v4.523a3.59 3.59 0 0 1 2.29-.908c2.455 0 4.283 2.124 4.283 4.89 0 2.767-1.828 4.891-4.283 4.891a3.618 3.618 0 0 1-2.291-.91v.682H5.44v-13.17zm8.168 4.139h2.247v.91a3.589 3.589 0 0 1 2.291-.91c2.455 0 4.282 2.124 4.282 4.89 0 2.767-1.827 4.891-4.282 4.891a3.618 3.618 0 0 1-2.291-.91v4.17H13.61V8.298zm-5.92 5.543c0-1.63-.97-2.953-2.168-2.953-1.2 0-2.17 1.322-2.17 2.953 0 1.631.97 2.953 2.17 2.953 1.199 0 2.168-1.322 2.168-2.953zm8.167 0c0-1.63-.97-2.953-2.168-2.953-1.199 0-2.17 1.322-2.17 2.953 0 1.631.971 2.953 2.17 2.953 1.199 0 2.168-1.322 2.168-2.953z"/>
-            </svg>
-          </a>
+
+        {audioProfile.valence_avg !== undefined && (
+          <div class="profile-stat">
+            <span class="profile-label">Mood</span>
+            <div class="profile-bar">
+              <div class="profile-fill mood" style={`--value: ${audioProfile.valence_avg * 100}%`}></div>
+            </div>
+            <span class="profile-value">{getMoodLabel(audioProfile.valence_avg)}</span>
+          </div>
+        )}
+
+        {audioProfile.tempo_avg !== undefined && (
+          <div class="profile-stat tempo">
+            <span class="profile-label">Tempo</span>
+            <span class="profile-tempo">{Math.round(audioProfile.tempo_avg)} BPM</span>
+          </div>
         )}
       </div>
     )}
+
+    <!-- External Links -->
+    <div class="external-links">
+      {/* Social Media Links */}
+      {socialLinks?.website && (
+        <a href={socialLinks.website} target="_blank" rel="noopener noreferrer" class="external-link" title="Official Website">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+          </svg>
+        </a>
+      )}
+      {socialLinks?.instagram && (
+        <a href={`https://instagram.com/${socialLinks.instagram}`} target="_blank" rel="noopener noreferrer" class="external-link" title="Instagram">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+          </svg>
+        </a>
+      )}
+      {socialLinks?.twitter && (
+        <a href={`https://x.com/${socialLinks.twitter}`} target="_blank" rel="noopener noreferrer" class="external-link" title="X (Twitter)">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+          </svg>
+        </a>
+      )}
+      {socialLinks?.tiktok && (
+        <a href={`https://tiktok.com/@${socialLinks.tiktok}`} target="_blank" rel="noopener noreferrer" class="external-link" title="TikTok">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
+          </svg>
+        </a>
+      )}
+      {/* Music Platform Links */}
+      {externalUrls?.wikipedia && (
+        <a href={externalUrls.wikipedia} target="_blank" rel="noopener noreferrer" class="external-link" title="Wikipedia">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12.09 13.119c-.936 1.932-2.217 4.548-2.853 5.728-.616 1.074-1.127.931-1.532.029-1.406-3.321-4.293-9.144-5.651-12.409-.251-.601-.441-.987-.619-1.139-.181-.15-.554-.24-1.122-.271C.103 5.033 0 4.982 0 4.898v-.455l.052-.045c.924-.005 5.401 0 5.401 0l.051.045v.434c0 .119-.075.176-.225.176l-.564.031c-.485.029-.727.164-.727.436 0 .135.053.33.166.601 1.082 2.646 4.818 10.521 4.818 10.521l.136.046 2.411-4.81-.482-1.067-1.658-3.264s-.318-.654-.428-.872c-.728-1.443-.712-1.518-1.447-1.617-.207-.023-.313-.05-.313-.149v-.468l.06-.045h4.292l.113.037v.451c0 .105-.076.15-.227.15l-.308.047c-.792.061-.661.381-.136 1.422l1.582 3.252 1.758-3.504c.293-.64.233-.801.111-.947-.07-.084-.305-.22-.812-.24l-.201-.021c-.052 0-.098-.015-.145-.051-.045-.031-.067-.076-.067-.129v-.427l.061-.045c1.247-.008 4.043 0 4.043 0l.059.045v.436c0 .121-.059.178-.193.178-.646.03-.782.095-1.023.439-.12.186-.375.589-.646 1.039l-2.301 4.273-.065.135 2.792 5.712.17.048 4.396-10.438c.154-.422.129-.722-.064-.895-.197-.172-.346-.273-.857-.295l-.42-.016c-.061 0-.105-.014-.152-.045-.043-.029-.072-.075-.072-.119v-.436l.059-.045h4.961l.041.045v.437c0 .119-.074.18-.209.18-.648.03-1.127.18-1.443.421-.314.255-.557.616-.736 1.067 0 0-4.043 9.258-5.426 12.339-.525 1.007-1.053.917-1.503-.031-.571-1.171-1.773-3.786-2.646-5.71l.053-.036z"/>
+          </svg>
+        </a>
+      )}
+      {externalUrls?.musicbrainz && (
+        <a href={externalUrls.musicbrainz} target="_blank" rel="noopener noreferrer" class="external-link" title="MusicBrainz">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M0 0v24h24V0H0zm5.441 4.16h2.248v4.523a3.59 3.59 0 0 1 2.29-.908c2.455 0 4.283 2.124 4.283 4.89 0 2.767-1.828 4.891-4.283 4.891a3.618 3.618 0 0 1-2.291-.91v.682H5.44v-13.17zm8.168 4.139h2.247v.91a3.589 3.589 0 0 1 2.291-.91c2.455 0 4.282 2.124 4.282 4.89 0 2.767-1.827 4.891-4.282 4.891a3.618 3.618 0 0 1-2.291-.91v4.17H13.61V8.298zm-5.92 5.543c0-1.63-.97-2.953-2.168-2.953-1.2 0-2.17 1.322-2.17 2.953 0 1.631.97 2.953 2.17 2.953 1.199 0 2.168-1.322 2.168-2.953zm8.167 0c0-1.63-.97-2.953-2.168-2.953-1.199 0-2.17 1.322-2.17 2.953 0 1.631.971 2.953 2.17 2.953 1.199 0 2.168-1.322 2.168-2.953z"/>
+          </svg>
+        </a>
+      )}
+      {socialLinks?.allmusic && (
+        <a href={socialLinks.allmusic} target="_blank" rel="noopener noreferrer" class="external-link" title="AllMusic">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19.707 4.293a1 1 0 00-1.414 0L12 10.586 5.707 4.293a1 1 0 00-1.414 1.414L10.586 12l-6.293 6.293a1 1 0 101.414 1.414L12 13.414l6.293 6.293a1 1 0 001.414-1.414L13.414 12l6.293-6.293a1 1 0 000-1.414z"/>
+          </svg>
+        </a>
+      )}
+      {socialLinks?.discogs && (
+        <a href={socialLinks.discogs} target="_blank" rel="noopener noreferrer" class="external-link" title="Discogs">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.372 0 0 5.372 0 12s5.372 12 12 12 12-5.372 12-12S18.628 0 12 0zm0 21.6c-5.292 0-9.6-4.308-9.6-9.6S6.708 2.4 12 2.4s9.6 4.308 9.6 9.6-4.308 9.6-9.6 9.6zm0-16.8c-3.972 0-7.2 3.228-7.2 7.2s3.228 7.2 7.2 7.2 7.2-3.228 7.2-7.2-3.228-7.2-7.2-7.2zm0 12c-2.652 0-4.8-2.148-4.8-4.8s2.148-4.8 4.8-4.8 4.8 2.148 4.8 4.8-2.148 4.8-4.8 4.8zm0-7.2c-1.332 0-2.4 1.068-2.4 2.4s1.068 2.4 2.4 2.4 2.4-1.068 2.4-2.4-1.068-2.4-2.4-2.4z"/>
+          </svg>
+        </a>
+      )}
+      {socialLinks?.bandcamp && (
+        <a href={socialLinks.bandcamp} target="_blank" rel="noopener noreferrer" class="external-link" title="Bandcamp">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M0 18.75l7.437-13.5H24l-7.438 13.5H0z"/>
+          </svg>
+        </a>
+      )}
+    </div>
   </div>
 </aside>
 
@@ -476,6 +655,19 @@ const toSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').
     color: var(--color-text-muted);
   }
 
+  /* Instrument tags - brass/gold accent */
+  .instrument-tag {
+    background: rgba(212, 162, 84, 0.12);
+    border-color: rgba(212, 162, 84, 0.3);
+    color: var(--jazz-amber);
+    cursor: default;
+  }
+
+  .instrument-tag:hover {
+    background: rgba(212, 162, 84, 0.2);
+    border-color: var(--jazz-amber);
+  }
+
   .text-muted {
     color: var(--color-text-muted);
     font-size: 0.8em;
@@ -484,6 +676,21 @@ const toSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').
   .font-mono {
     font-family: 'JetBrains Mono Variable', monospace;
     font-size: 0.9em;
+  }
+
+  /* Active badge */
+  .active-badge {
+    display: inline-block;
+    margin-left: 0.5rem;
+    padding: 0.125rem 0.5rem;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: 9999px;
+    background: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.3);
   }
 
   /* Spotify section */
@@ -586,6 +793,92 @@ const toSlug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').
   .spotify-link:hover {
     background: rgba(30, 215, 96, 0.2);
     border-color: #1DB954;
+  }
+
+  /* Audio profile section */
+  .audio-profile-section {
+    padding: 0.75rem;
+    background: linear-gradient(135deg, rgba(147, 51, 234, 0.08) 0%, rgba(147, 51, 234, 0.02) 100%);
+    border-top: 1px solid var(--color-border-light);
+  }
+
+  .audio-profile-header {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #9333ea;
+    margin-bottom: 0.5rem;
+  }
+
+  .audio-icon {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .profile-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0;
+  }
+
+  .profile-stat.tempo {
+    justify-content: space-between;
+    padding-top: 0.375rem;
+    margin-top: 0.25rem;
+    border-top: 1px solid var(--color-border-light);
+  }
+
+  .profile-label {
+    font-size: 0.7rem;
+    color: var(--color-text-secondary);
+    min-width: 3rem;
+  }
+
+  .profile-bar {
+    flex: 1;
+    height: 0.375rem;
+    background: var(--color-border-light);
+    border-radius: 9999px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .profile-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: var(--value);
+    border-radius: 9999px;
+    transition: width var(--duration-slow) var(--ease-jazz);
+  }
+
+  .profile-fill.energy {
+    background: linear-gradient(90deg, #f97316 0%, #eab308 100%);
+  }
+
+  .profile-fill.mood {
+    background: linear-gradient(90deg, #3b82f6 0%, #a855f7 100%);
+  }
+
+  .profile-value {
+    font-size: 0.65rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    min-width: 2.5rem;
+    text-align: right;
+  }
+
+  .profile-tempo {
+    font-family: 'JetBrains Mono Variable', monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #9333ea;
   }
 
   /* External links */

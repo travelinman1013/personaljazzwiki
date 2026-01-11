@@ -1,0 +1,176 @@
+---
+/**
+ * Roles Index - Browse all artist roles
+ * Uses D1 database for data
+ */
+import Layout from '../../layouts/Layout.astro';
+
+// Access D1 from runtime env
+const db = Astro.locals.runtime?.env?.DB;
+
+// Set cache headers
+Astro.response.headers.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
+
+interface Role {
+  id: number;
+  name: string;
+  slug: string;
+  category: string;
+  artist_count: number;
+}
+
+let roles: Role[] = [];
+let totalArtists = 0;
+let errorMessage = '';
+
+if (db) {
+  try {
+    // Get all roles from lookup table
+    const { results } = await db
+      .prepare('SELECT id, name, slug, category, artist_count FROM roles ORDER BY artist_count DESC')
+      .all();
+    roles = results as Role[];
+
+    // Get total artist count
+    const countResult = await db
+      .prepare('SELECT COUNT(*) as count FROM artists')
+      .first();
+    totalArtists = (countResult as { count: number })?.count || 0;
+  } catch (error) {
+    console.error('Error loading roles:', error);
+    errorMessage = 'Failed to load roles.';
+  }
+} else {
+  errorMessage = 'Database not available.';
+}
+
+// Group roles by category
+const rolesByCategory = new Map<string, Role[]>();
+roles.forEach(role => {
+  const category = role.category || 'other';
+  if (!rolesByCategory.has(category)) {
+    rolesByCategory.set(category, []);
+  }
+  rolesByCategory.get(category)!.push(role);
+});
+
+// Category display names and order
+const categoryInfo: Record<string, { name: string; description: string }> = {
+  performer: {
+    name: 'Performers',
+    description: 'Artists who perform music live or in recordings'
+  },
+  creator: {
+    name: 'Creators',
+    description: 'Artists who write, produce, or compose music'
+  },
+  group: {
+    name: 'Groups & Bands',
+    description: 'Musical ensembles and collectives'
+  },
+  other: {
+    name: 'Other',
+    description: 'Additional artist categories'
+  }
+};
+
+const categoryOrder = ['performer', 'creator', 'group', 'other'];
+const sortedCategories = categoryOrder
+  .filter(cat => rolesByCategory.has(cat))
+  .map(cat => [cat, rolesByCategory.get(cat)!] as [string, Role[]]);
+
+// Stats
+const totalRoles = roles.length;
+const topRole = roles[0];
+---
+
+<Layout title="Artist Roles">
+  <div class="article-content">
+    <h1>Browse by Role</h1>
+
+    {errorMessage ? (
+      <p class="text-red-600">{errorMessage}</p>
+    ) : (
+      <>
+        <p class="text-wiki-text-secondary mb-6">
+          Explore <strong>{totalRoles}</strong> artist roles across <strong>{totalArtists.toLocaleString()}</strong> artists.
+          {topRole && topRole.artist_count > 0 && (
+            <>
+              The most common role is <a href={`/roles/${topRole.slug}`} class="text-wiki-link">{topRole.name}</a> with {topRole.artist_count.toLocaleString()} artists.
+            </>
+          )}
+        </p>
+
+        <!-- Top Roles Quick Links -->
+        <div class="bg-wiki-accent-light border border-wiki-border rounded p-4 mb-8">
+          <h2 class="text-lg font-serif mb-3">Popular Roles</h2>
+          <div class="flex flex-wrap gap-2">
+            {roles.filter(r => r.artist_count > 0).slice(0, 12).map(role => (
+              <a
+                href={`/roles/${role.slug}`}
+                class="inline-flex items-center px-3 py-1.5 bg-white border border-wiki-border rounded text-sm hover:bg-wiki-bg hover:border-wiki-link transition-colors"
+              >
+                <span class="text-wiki-link font-medium">{role.name}</span>
+                <span class="ml-2 text-wiki-text-muted text-xs">({role.artist_count.toLocaleString()})</span>
+              </a>
+            ))}
+          </div>
+        </div>
+
+        <!-- Roles by Category -->
+        <div class="space-y-8">
+          {sortedCategories.map(([category, categoryRoles]) => {
+            const info = categoryInfo[category] || { name: category, description: '' };
+            const categoryTotal = categoryRoles.reduce((sum, r) => sum + r.artist_count, 0);
+            return (
+              <section>
+                <h2 class="text-xl font-serif border-b border-wiki-border pb-2 mb-2">
+                  {info.name}
+                  <span class="text-wiki-text-muted text-sm font-normal ml-2">
+                    ({categoryRoles.length} roles, {categoryTotal.toLocaleString()} artists)
+                  </span>
+                </h2>
+                {info.description && (
+                  <p class="text-wiki-text-muted text-sm mb-4">{info.description}</p>
+                )}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                  {categoryRoles.map(role => (
+                    <a
+                      href={`/roles/${role.slug}`}
+                      class="flex items-center justify-between p-2 hover:bg-wiki-accent-light rounded border border-transparent hover:border-wiki-border-light transition-colors"
+                    >
+                      <span class="text-wiki-link">{role.name}</span>
+                      <span class="text-wiki-text-muted text-sm">{role.artist_count.toLocaleString()} artists</span>
+                    </a>
+                  ))}
+                </div>
+              </section>
+            );
+          })}
+        </div>
+
+        <!-- All Roles Alphabetical (collapsed) -->
+        <details class="mt-8 border border-wiki-border rounded">
+          <summary class="p-4 bg-wiki-bg-nav cursor-pointer hover:bg-wiki-accent-light font-medium">
+            View all {totalRoles} roles alphabetically
+          </summary>
+          <div class="p-4 max-h-96 overflow-y-auto">
+            <div class="columns-2 md:columns-3 lg:columns-4 gap-4">
+              {roles
+                .slice()
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map(role => (
+                  <a
+                    href={`/roles/${role.slug}`}
+                    class="block text-wiki-link hover:underline text-sm py-0.5 break-inside-avoid"
+                  >
+                    {role.name} <span class="text-wiki-text-muted">({role.artist_count})</span>
+                  </a>
+                ))}
+            </div>
+          </div>
+        </details>
+      </>
+    )}
+  </div>
+</Layout>
