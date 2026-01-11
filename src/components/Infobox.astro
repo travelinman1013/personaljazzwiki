@@ -71,9 +71,17 @@ const typeInfo = getTypeAccent(background);
 const formatNumber = (num: number | undefined) => num?.toLocaleString() ?? 'N/A';
 
 // Format date for display
+// Parse as local date to avoid timezone issues - "1937-04-06" should display as Apr 6, not Apr 5
 const formatDate = (date: string | undefined) => {
   if (!date) return null;
   try {
+    // Check for YYYY-MM-DD format and parse as local date
+    const parts = date.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (parts) {
+      const d = new Date(parseInt(parts[1]), parseInt(parts[2]) - 1, parseInt(parts[3]));
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+    // Fallback for other date formats
     const d = new Date(date);
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   } catch {
