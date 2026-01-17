@@ -7,6 +7,10 @@ on:
         description: 'Sync artist data to D1 database'
         type: boolean
         default: true
+      full_sync:
+        description: 'Full sync (re-sync all artists, slower)'
+        type: boolean
+        default: false
       upload_portraits:
         description: 'Upload new portraits to R2'
         type: boolean
@@ -39,7 +43,17 @@ jobs:
           ARTIST_COUNT=$(find content-deploy/artists -name "*.md" 2>/dev/null | wc -l || echo "0")
           echo "Found $ARTIST_COUNT artist files to sync"
 
-      - name: Sync to D1
+      - name: Sync to D1 (incremental)
+        if: ${{ !inputs.full_sync }}
+        run: npx tsx scripts/sync-incremental.ts --remote ${{ inputs.dry_run && '--dry-run' || '' }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          ARTISTS_DIR: ./content-deploy/artists
+          PORTRAITS_DIR: ./content-deploy/portraits
+
+      - name: Sync to D1 (full)
+        if: ${{ inputs.full_sync }}
         run: npx tsx scripts/sync-to-d1.ts --remote ${{ inputs.dry_run && '--dry-run' || '' }}
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
