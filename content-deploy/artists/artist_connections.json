@@ -38099,5 +38099,992 @@
     ],
     "updated": "2026-01-14T01:10:45.123262",
     "source": "perplexity_research"
+  },
+  "Larry Coryell": {
+    "mentors": [
+      "Wes Montgomery",
+      "Les Paul",
+      "Tal Farlow"
+    ],
+    "collaborators": [
+      "Gábor Szabó",
+      "Gary Burton",
+      "Alphonse Mouzon",
+      "John McLaughlin",
+      "Philip Catherine"
+    ],
+    "influenced": [
+      "John McLaughlin"
+    ],
+    "updated": "2026-01-15T01:15:18.583889",
+    "source": "perplexity_research"
+  },
+  "Erik Jekabson": {
+    "mentors": [],
+    "collaborators": [
+      "Illinois Jacquet",
+      "John Santos"
+    ],
+    "influenced": [],
+    "updated": "2026-01-15T01:15:30.011892",
+    "source": "perplexity_research"
+  },
+  "David Murray Octet": {
+    "mentors": [
+      "Stanley Crouch",
+      "Dewey Redman",
+      "Albert Ayler"
+    ],
+    "collaborators": [
+      "Henry Threadgill",
+      "Olu Dara",
+      "George Lewis",
+      "Julius Hemphill",
+      "Oliver Lake",
+      "Hamiet Bluiett",
+      "Jack DeJohnette"
+    ],
+    "influenced": [
+      "Tim Berne",
+      "Allen Lowe"
+    ],
+    "updated": "2026-01-15T01:15:51.993165",
+    "source": "perplexity_research"
+  },
+  "Hiromi & Hiromi's Sonicwonder": {
+    "mentors": [
+      "Noriko Hikida",
+      "Ahmad Jamal",
+      "Chick Corea",
+      "Richard Evans"
+    ],
+    "collaborators": [
+      "Tony Grey",
+      "Martin Valihora",
+      "David Fiuczynski",
+      "Anthony Jackson",
+      "Simon Phillips",
+      "Hadrien Feraud",
+      "Gene Coye",
+      "Adam O’Farrill",
+      "Stanley Clarke Band"
+    ],
+    "influenced": [],
+    "updated": "2026-01-15T01:16:08.388028",
+    "source": "perplexity_research"
+  },
+  "THE NEW ORLEANS OWLS": {
+    "mentors": [],
+    "collaborators": [
+      "Benjie White",
+      "Bill Padron",
+      "Frank Netto",
+      "Nappy Lamare",
+      "Pinky Vidacovich",
+      "Mose Farrar",
+      "Dan LeBlanc",
+      "Red Bowman"
+    ],
+    "influenced": [],
+    "updated": "2026-01-15T01:16:23.291715",
+    "source": "perplexity_research"
+  },
+  "LIL ARMSTRONG": {
+    "mentors": [
+      "Jelly Roll Morton"
+    ],
+    "collaborators": [
+      "King Oliver",
+      "Louis Armstrong",
+      "Alberta Hunter",
+      "Lawrence Duhé"
+    ],
+    "influenced": [
+      "Louis Armstrong"
+    ],
+    "updated": "2026-01-15T01:16:39.953523",
+    "source": "perplexity_research"
+  },
+  "CHOCOLATE DANDIES": {
+    "mentors": [
+      "Don Redman",
+      "Benny Carter"
+    ],
+    "collaborators": [
+      "Rex Stewart",
+      "J.C. Higginbotham",
+      "Coleman Hawkins",
+      "Fats Waller",
+      "Benny Carter",
+      "Leon 'Chu' Berry",
+      "Buck Clayton",
+      "Max Kaminsky"
+    ],
+    "influenced": [],
+    "updated": "2026-01-15T01:16:55.968364",
+    "source": "perplexity_research"
+  },
+  "DOLLY KAY": {
+    "mentors": [],
+    "collaborators": [],
+    "influenced": [],
+    "updated": "2026-01-15T01:17:04.666676",
+    "source": "perplexity_research"
+  },
+  "MIFF MOLE'S MOLERS": {
+    "mentors": [
+      "Jack Teagarden"
+    ],
+    "collaborators": [
+      "Red Nichols",
+      "Phil Napoleon",
+      "Sophie Tucker",
+      "Jimmy Dorsey",
+      "Eddie Lang",
+      "Paul Whiteman",
+      "Benny Goodman"
+    ],
+    "influenced": [
+      "Tommy Dorsey",
+      "Jack Teagarden"
+    ],
+    "updated": "2026-01-15T01:17:21.656860",
+    "source": "perplexity_research"
+  },
+  "ANN COOK": {
+    "mentors": [],
+    "collaborators": [],
+    "influenced": [],
+    "updated": "2026-01-15T01:17:35.088793",
+    "source": "perplexity_research"
+  },
+  "THE SAVOY BEARCATS": {
+    "mentors": [],
+    "collaborators": [
+      "Leon Abbey",
+      "Duncan Mayers",
+      "Gilbert Paris",
+      "Demas Dean",
+      "James Reevy",
+      "Carmelo Jari (Jejo)",
+      "Otto Mikell",
+      "Ramon Hernandez",
+      "Rex Stewart",
+      "Charlie Green",
+      "Tiny Bradshaw"
+    ],
+    "influenced": [],
+    "updated": "2026-01-15T01:17:51.038985",
+    "source": "perplexity_research"
+  },
+  "RUBY GOWDY": {
+    "mentors": [],
+    "collaborators": [],
+    "influenced": [],
+    "updated": "2026-01-15T01:18:07.400371",
+    "source": "perplexity_research"
+  },
+  "WASHBOARD RHYTHM KINGS": {
+    "mentors": [],
+    "collaborators": [
+      "Ghost Howell",
+      "Banjo Ikey Robinson",
+      "Frankie “Half Pint” Jaxon",
+      "Johnny Dodds"
+    ],
+    "influenced": [],
+    "updated": "2026-01-15T01:18:22.209114",
+    "source": "perplexity_research"
+  },
+  "DIXON'S JAZZ MANIACS": {
+    "mentors": [
+      "Erskine Tate",
+      "Kline Tyndall"
+    ],
+    "collaborators": [
+      "Kline Tyndall",
+      "Lawrence Dixon",
+      "Hattie McDaniels",
+      "Frankie Jaxon"
+    ],
+    "influenced": [],
+    "updated": "2026-01-15T01:18:39.191169",
+    "source": "perplexity_research"
+  },
+  "BLYTHE'S WASHBOARD BAND": {
+    "mentors": [
+      "Clarence M. Jones"
+    ],
+    "collaborators": [
+      "Johnny Dodds",
+      "Jasper Taylor",
+      "Trixie Smith",
+      "Alex J. Robinson",
+      "Aletha Dickerson"
+    ],
+    "influenced": [
+      "Clarence 'Pine Top' Smith",
+      "Albert Ammons"
+    ],
+    "updated": "2026-01-15T01:18:55.208589",
+    "source": "perplexity_research"
+  },
+  "Henri Texier": {
+    "mentors": [
+      "Wilbur Ware"
+    ],
+    "collaborators": [
+      "Daniel Humair",
+      "Phil Woods",
+      "Louis Sclavis",
+      "Aldo Romano",
+      "Don Cherry",
+      "Sébastien Texier"
+    ],
+    "influenced": [
+      "Sébastien Texier"
+    ],
+    "updated": "2026-01-16T01:37:59.434839",
+    "source": "perplexity_research"
+  },
+  "Courtney Bryan": {
+    "mentors": [
+      "George Lewis"
+    ],
+    "collaborators": [
+      "Louisiana Philharmonic Orchestra",
+      "Jacksonville Symphony",
+      "Opera Philadelphia",
+      "Quince Ensemble"
+    ],
+    "influenced": [],
+    "updated": "2026-01-16T01:38:13.333182",
+    "source": "perplexity_research"
+  },
+  "Charles Brackeen": {
+    "mentors": [
+      "Ornette Coleman",
+      "Dewey Redman"
+    ],
+    "collaborators": [
+      "Paul Motian",
+      "Don Cherry",
+      "Charlie Haden",
+      "Ed Blackwell",
+      "David Izenzon",
+      "J.F. Jenny-Clark"
+    ],
+    "influenced": [],
+    "updated": "2026-01-16T01:38:27.741920",
+    "source": "perplexity_research"
+  },
+  "William Parker Quartet": {
+    "mentors": [
+      "Jimmy Garrison",
+      "Richard Davis",
+      "Wilbur Ware",
+      "Art Davis",
+      "Milt Hinton"
+    ],
+    "collaborators": [
+      "Hamid Drake",
+      "Rob Brown",
+      "Lewis Barnes",
+      "Leena Conquest",
+      "Cecil Taylor",
+      "David S. Ware",
+      "Matthew Shipp",
+      "Peter Brötzmann"
+    ],
+    "influenced": [
+      "Vision Festival participants and New York experimental jazz scene"
+    ],
+    "updated": "2026-01-16T01:38:54.933518",
+    "source": "perplexity_research"
+  },
+  "Billy Bang Sextet": {
+    "mentors": [
+      "Leroy Jenkins",
+      "James Jacson",
+      "Ornette Coleman"
+    ],
+    "collaborators": [
+      "James Emery",
+      "John Lindberg",
+      "Frank Lowe",
+      "David Murray",
+      "William Parker",
+      "Sun Ra",
+      "Joe Fonda",
+      "Barry Altschul"
+    ],
+    "influenced": [
+      "Bemkey"
+    ],
+    "updated": "2026-01-16T01:39:15.028674",
+    "source": "perplexity_research"
+  },
+  "Back Door": {
+    "mentors": [],
+    "collaborators": [
+      "Colin Hodgkinson",
+      "Ron Aspery",
+      "Tony Hicks"
+    ],
+    "influenced": [],
+    "updated": "2026-01-16T01:39:30.036462",
+    "source": "perplexity_research"
+  },
+  "de la soul": {
+    "mentors": [
+      "Prince Paul"
+    ],
+    "collaborators": [
+      "A Tribe Called Quest",
+      "Jungle Brothers",
+      "Queen Latifah",
+      "Common",
+      "Mos Def",
+      "J Dilla"
+    ],
+    "influenced": [
+      "Gorillaz"
+    ],
+    "updated": "2026-01-16T01:39:48.446491",
+    "source": "perplexity_research"
+  },
+  "James Andrews": {
+    "mentors": [
+      "Jesse Hill",
+      "Allen Toussaint"
+    ],
+    "collaborators": [
+      "Troy 'Trombone Shorty' Andrews",
+      "Danny Barker",
+      "Dizzy Gillespie",
+      "Dr. John",
+      "Crescent City All-Stars members (e.g., Kevin O’Day, Chris Severin, Richard Anderson)"
+    ],
+    "influenced": [
+      "Troy 'Trombone Shorty' Andrews"
+    ],
+    "updated": "2026-01-16T01:40:02.574767",
+    "source": "perplexity_research"
+  },
+  "Kevin Louis & the Palm Court Jazz Band": {
+    "mentors": [],
+    "collaborators": [
+      "Preservation All-Stars",
+      "Palm Court Jazz Band"
+    ],
+    "influenced": [],
+    "updated": "2026-01-16T01:40:16.172789",
+    "source": "perplexity_research"
+  },
+  "Bob French": {
+    "mentors": [
+      "Jack Willis",
+      "Frog Joseph",
+      "Joseph 'Cornbread' Thomas",
+      "Jeanette Kimball"
+    ],
+    "collaborators": [
+      "Albert 'Papa' French",
+      "Branford Marsalis",
+      "Harry Connick Jr.",
+      "Trombone Shorty",
+      "Fats Domino"
+    ],
+    "influenced": [
+      "Glen Andrews",
+      "Shamarr Allen",
+      "Kid Chocolate",
+      "Gerald French"
+    ],
+    "updated": "2026-01-16T01:40:33.204264",
+    "source": "perplexity_research"
+  },
+  "PHILLIP MANUEL": {
+    "mentors": [
+      "Father (name not specified)",
+      "Aaron Neville"
+    ],
+    "collaborators": [
+      "Terence Blanchard",
+      "Nicholas Payton",
+      "Ellis Marsalis",
+      "Peter Martin"
+    ],
+    "influenced": [],
+    "updated": "2026-01-16T01:40:48.188279",
+    "source": "perplexity_research"
+  },
+  "TONYA BOYD-CANNON & DA TRUTH BRASS BAND": {
+    "mentors": [
+      "High school and middle school band directors",
+      "Paul Mirkovich"
+    ],
+    "collaborators": [
+      "Jean Knight",
+      "Stooges Brass Band",
+      "Eve",
+      "Cassandra Wilson"
+    ],
+    "influenced": [
+      "Inmates at Orleans Parish Prison",
+      "New Orleans Citywide Youth Choir members",
+      "Rise My Child Foundation participants"
+    ],
+    "updated": "2026-01-16T01:41:06.260169",
+    "source": "perplexity_research"
+  },
+  "Benmont Tench": {
+    "mentors": [
+      "The Beatles"
+    ],
+    "collaborators": [
+      "Tom Petty and the Heartbreakers",
+      "Mudcrutch",
+      "Stevie Nicks",
+      "Bob Dylan",
+      "Rolling Stones"
+    ],
+    "influenced": [],
+    "updated": "2026-01-16T01:41:25.811045",
+    "source": "perplexity_research"
+  },
+  "Irvin Mayfield": {
+    "mentors": [
+      "Ellis Marsalis"
+    ],
+    "collaborators": [
+      "Jason Marsalis",
+      "Bill Summers",
+      "Wynton Marsalis",
+      "Victor Atkins",
+      "Ed 'Sweetbread' Petersen"
+    ],
+    "influenced": [
+      "Students at Dillard University and University of New Orleans"
+    ],
+    "updated": "2026-01-16T01:41:49.787885",
+    "source": "perplexity_research"
+  },
+  "Jacky Terrasson": {
+    "mentors": [
+      "Francis Paudras",
+      "Ray Santisi",
+      "Danilo Pérez",
+      "Betty Carter"
+    ],
+    "collaborators": [
+      "Ugonna Okegwo",
+      "Leon Parker",
+      "Stefon Harris",
+      "Emmanuel Pahud",
+      "Cassandra Wilson",
+      "Michael Brecker",
+      "Dianne Reeves",
+      "Ray Brown"
+    ],
+    "influenced": [],
+    "updated": "2026-01-16T01:42:15.194077",
+    "source": "perplexity_research"
+  },
+  "Art Pepper": {
+    "mentors": [
+      "Benny Carter",
+      "Charlie Parker",
+      "Lee Konitz",
+      "John Coltrane"
+    ],
+    "collaborators": [
+      "Stan Kenton",
+      "George Cables",
+      "Marty Paich"
+    ],
+    "influenced": [],
+    "updated": "2026-01-16T01:42:33.902838",
+    "source": "perplexity_research"
+  },
+  "earnest jackson, sugar daddy and the gumbo roux": {
+    "mentors": [],
+    "collaborators": [
+      "Sugar Daddy and the Gumbo Roux",
+      "Kinny Landrum",
+      "Randy Jackson"
+    ],
+    "influenced": [],
+    "updated": "2026-01-16T01:42:46.473605",
+    "source": "perplexity_research"
+  },
+  "ryan bingham": {
+    "mentors": [
+      "Laredo Family Friend"
+    ],
+    "collaborators": [
+      "Jeff Bridges"
+    ],
+    "influenced": [],
+    "updated": "2026-01-16T01:43:07.558440",
+    "source": "perplexity_research"
+  },
+  "muddy waters w earl hooker": {
+    "mentors": [
+      "Robert Lockwood Jr.",
+      "Sonny Boy Williamson"
+    ],
+    "collaborators": [
+      "Muddy Waters",
+      "Junior Wells",
+      "Willie Dixon",
+      "John Lee Hooker",
+      "Magic Sam"
+    ],
+    "influenced": [
+      "Muddy Waters",
+      "Led Zeppelin"
+    ],
+    "updated": "2026-01-16T01:43:22.842304",
+    "source": "perplexity_research"
+  },
+  "earl hooker w jody williams": {
+    "mentors": [
+      "Bo Diddley",
+      "Robert Nighthawk"
+    ],
+    "collaborators": [
+      "Junior Wells",
+      "Jody Williams",
+      "Muddy Waters",
+      "Howlin' Wolf"
+    ],
+    "influenced": [
+      "Otis Rush",
+      "Buddy Guy"
+    ],
+    "updated": "2026-01-16T01:43:43.173937",
+    "source": "perplexity_research"
+  },
+  "Lakou Mizi, The Soul Rebels": {
+    "mentors": [
+      "Sanba Zao (Louis Lesly Marcelin)"
+    ],
+    "collaborators": [
+      "The Soul Rebels",
+      "Leyla McCalla",
+      "Raja Kassis",
+      "Eric Heigle",
+      "Win Butler and Régine Chassagne",
+      "Preservation Hall Jazz Band",
+      "Trombone Shorty",
+      "Tank and The Bangas",
+      "Jon Cleary",
+      "Zach Niles"
+    ],
+    "influenced": [],
+    "updated": "2026-01-17T01:59:47.190159",
+    "source": "perplexity_research"
+  },
+  "Victor Jara": {
+    "mentors": [
+      "Violeta Parra",
+      "Atahualpa Yupanqui",
+      "Pablo Neruda"
+    ],
+    "collaborators": [
+      "Quilapayún",
+      "Ángel Parra",
+      "Joan Jara"
+    ],
+    "influenced": [
+      "Phil Ochs",
+      "The Clash",
+      "U2"
+    ],
+    "updated": "2026-01-17T02:00:02.387852",
+    "source": "perplexity_research"
+  },
+  "Rufus, Chaka Khan": {
+    "mentors": [
+      "Stevie Wonder",
+      "Ike Turner"
+    ],
+    "collaborators": [
+      "Tony Maiden",
+      "Quincy Jones",
+      "Dave Wolinski",
+      "Andre Fischer"
+    ],
+    "influenced": [],
+    "updated": "2026-01-17T02:00:17.339732",
+    "source": "perplexity_research"
+  },
+  "Donald Harrison, Dr. John": {
+    "mentors": [
+      "Ellis Marsalis Jr.",
+      "Roy Haynes",
+      "Art Blakey"
+    ],
+    "collaborators": [
+      "Terence Blanchard",
+      "Dr. John",
+      "The Cookers"
+    ],
+    "influenced": [
+      "Christian Scott aTunde Adjuah",
+      "Jon Batiste",
+      "Trombone Shorty",
+      "Esperanza Spalding"
+    ],
+    "updated": "2026-01-17T02:00:33.132048",
+    "source": "perplexity_research"
+  },
+  "Manu Dibango": {
+    "mentors": [
+      "Joseph Kabasele",
+      "Duke Ellington",
+      "Charlie Parker"
+    ],
+    "collaborators": [
+      "Joseph Kabasele",
+      "Fela Kuti",
+      "Herbie Hancock",
+      "Sly and Robbie",
+      "Eliades Ochoa",
+      "Nino Ferrer"
+    ],
+    "influenced": [
+      "Michael Jackson",
+      "Kanye West"
+    ],
+    "updated": "2026-01-17T02:00:51.136218",
+    "source": "perplexity_research"
+  },
+  "Lucio Feuillet": {
+    "mentors": [],
+    "collaborators": [
+      "La Muchacha"
+    ],
+    "influenced": [],
+    "updated": "2026-01-17T02:01:07.509237",
+    "source": "perplexity_research"
+  },
+  "Sharon Jones, The Dap-Kings": {
+    "mentors": [
+      "James Brown",
+      "Gabriel Roth (Bosco Mann)"
+    ],
+    "collaborators": [
+      "Gabriel Roth (Bosco Mann)",
+      "Binky Griptite",
+      "Neal Sugarman",
+      "Amy Winehouse",
+      "Mark Ronson",
+      "Lee Fields"
+    ],
+    "influenced": [],
+    "updated": "2026-01-17T02:01:22.379930",
+    "source": "perplexity_research"
+  },
+  "Nico Segal": {
+    "mentors": [
+      "Tito Carrillo",
+      "Victor Garcia",
+      "Von Freeman",
+      "Marquis Hill"
+    ],
+    "collaborators": [
+      "Chance the Rapper",
+      "Vic Mensa",
+      "Peter Cottontale",
+      "Greg Landfair Jr.",
+      "Nate Fox",
+      "Julian Reid",
+      "Frank Ocean",
+      "J. Cole",
+      "Kanye West"
+    ],
+    "influenced": [],
+    "updated": "2026-01-17T02:01:37.694585",
+    "source": "perplexity_research"
+  },
+  "Manhattan School of Music Afro C": {
+    "mentors": [
+      "Bobby Sanabria",
+      "Arturo O'Farrill"
+    ],
+    "collaborators": [
+      "Patrick Bartley",
+      "Xavier Del Castillo",
+      "Leo Pellegrino",
+      "Duke Ellington / Billy Strayhorn"
+    ],
+    "influenced": [],
+    "updated": "2026-01-17T02:01:56.768338",
+    "source": "perplexity_research"
+  },
+  "Benny Grunch": {
+    "mentors": [],
+    "collaborators": [
+      "Wade (drummer)"
+    ],
+    "influenced": [],
+    "updated": "2026-01-17T02:02:15.404790",
+    "source": "perplexity_research"
+  },
+  "James brown and the FAmous Flames": {
+    "mentors": [
+      "Bobby Byrd",
+      "Little Richard's manager"
+    ],
+    "collaborators": [
+      "Bobby Byrd",
+      "Johnny Terry",
+      "Lloyd Stallworth",
+      "Bobby Bennett"
+    ],
+    "influenced": [
+      "The Fabulous Flames"
+    ],
+    "updated": "2026-01-17T02:02:33.955104",
+    "source": "perplexity_research"
+  },
+  "David Sneider": {
+    "mentors": [
+      "John Sneider"
+    ],
+    "collaborators": [
+      "Jacob Chung",
+      "Tyler Henderson",
+      "Joey Ranieri",
+      "Willie Bowman",
+      "Dom Salvador",
+      "Ulysses Owens",
+      "Larry Goldings",
+      "John Sneider"
+    ],
+    "influenced": [],
+    "updated": "2026-01-17T02:02:47.076898",
+    "source": "perplexity_research"
+  },
+  "Nat Adderley Jr": {
+    "mentors": [
+      "Nat Adderley Sr.",
+      "Cannonball Adderley"
+    ],
+    "collaborators": [
+      "Luther Vandross",
+      "Aretha Franklin",
+      "Chris Berger",
+      "Vincent Herring"
+    ],
+    "influenced": [],
+    "updated": "2026-01-17T02:03:02.735089",
+    "source": "perplexity_research"
+  },
+  "Nat Adderley": {
+    "mentors": [
+      "Lionel Hampton"
+    ],
+    "collaborators": [
+      "Cannonball Adderley (Julian Adderley)",
+      "J.J. Johnson",
+      "Woody Herman",
+      "Wes Montgomery",
+      "Bill Evans",
+      "Lou Donaldson",
+      "Sam Jones",
+      "Jimmy Cobb",
+      "Junior Mance",
+      "Sonny Fortune",
+      "Vincent Herring"
+    ],
+    "influenced": [],
+    "updated": "2026-01-17T02:03:28.860206",
+    "source": "perplexity_research"
+  },
+  "Chick Corea Christian McBride Brian Blade": {
+    "mentors": [
+      "Lee Smith",
+      "Ray Brown",
+      "Miles Davis",
+      "Cal Tjader, Herbie Mann, Mongo Santamaria",
+      "Sarah Vaughan"
+    ],
+    "collaborators": [
+      "John McLaughlin",
+      "Kenny Garrett",
+      "Wayne Shorter",
+      "Jon Cowherd",
+      "Gary Burton"
+    ],
+    "influenced": [
+      "Christian McBride",
+      "Brian Blade"
+    ],
+    "updated": "2026-01-17T02:03:46.667487",
+    "source": "perplexity_research"
+  },
+  "buddy guy & robert randolph": {
+    "mentors": [
+      "Muddy Waters",
+      "Howlin' Wolf"
+    ],
+    "collaborators": [
+      "Junior Wells",
+      "Eric Clapton",
+      "Jeff Beck",
+      "Mark Knopfler",
+      "Robert Randolph",
+      "Keith Richards",
+      "Carlos Santana",
+      "Little Walter",
+      "Sonny Boy Williamson"
+    ],
+    "influenced": [
+      "Eric Clapton",
+      "Jeff Beck",
+      "British Rock Musicians (general)"
+    ],
+    "updated": "2026-01-17T02:04:11.856356",
+    "source": "perplexity_research"
+  },
+  "james scott": {
+    "mentors": [
+      "Scott Joplin",
+      "John Coleman",
+      "Emma Johns DeArmond"
+    ],
+    "collaborators": [
+      "John Stillwell Stark",
+      "Charles L. Dumars",
+      "Ada Brown"
+    ],
+    "influenced": [
+      "Joseph Lamb"
+    ],
+    "updated": "2026-01-17T02:04:26.480885",
+    "source": "perplexity_research"
+  },
+  "hattie hart": {
+    "mentors": [],
+    "collaborators": [
+      "Memphis Jug Band"
+    ],
+    "influenced": [],
+    "updated": "2026-01-17T02:04:39.979333",
+    "source": "perplexity_research"
+  },
+  "janis joplin": {
+    "mentors": [
+      "Lead Belly",
+      "Bessie Smith",
+      "Big Mama Thornton",
+      "Odetta"
+    ],
+    "collaborators": [
+      "Big Brother and the Holding Company",
+      "Jorma Kaukonen",
+      "Chet Helms"
+    ],
+    "influenced": [
+      "Jimmy Johnson"
+    ],
+    "updated": "2026-01-17T02:05:02.243261",
+    "source": "perplexity_research"
+  },
+  "jimmy dean": {
+    "mentors": [
+      "Ruth Taylor Dean",
+      "Connie B. Gay"
+    ],
+    "collaborators": [
+      "Texas Wildcats",
+      "Dottie West",
+      "Patsy Cline",
+      "Roy Clark"
+    ],
+    "influenced": [
+      "Jim Henson"
+    ],
+    "updated": "2026-01-17T02:05:16.912874",
+    "source": "perplexity_research"
+  },
+  "johnny burnette": {
+    "mentors": [
+      "Howlin’ Wolf"
+    ],
+    "collaborators": [
+      "Dorsey Burnette",
+      "Paul Burlison",
+      "Doyle Holly",
+      "Ricky Nelson"
+    ],
+    "influenced": [
+      "The Yardbirds",
+      "Aerosmith",
+      "Ringo Starr"
+    ],
+    "updated": "2026-01-17T02:05:38.100700",
+    "source": "perplexity_research"
+  },
+  "the cruel sea": {
+    "mentors": [
+      "The Ventures",
+      "The Shadows",
+      "The Atlantics"
+    ],
+    "collaborators": [
+      "Tex Perkins",
+      "Jim Elliott",
+      "Ken Gormly",
+      "Dan Rumour (Danny Rumour)",
+      "James Cruickshank",
+      "Matt Walker"
+    ],
+    "influenced": [],
+    "updated": "2026-01-17T02:05:58.029672",
+    "source": "perplexity_research"
+  },
+  "cactus": {
+    "mentors": [
+      "Jeff Beck"
+    ],
+    "collaborators": [
+      "Tim Bogert",
+      "Jim McCarty",
+      "Rusty Day",
+      "Jimmy Kunes",
+      "Randy Pratt"
+    ],
+    "influenced": [],
+    "updated": "2026-01-17T02:06:16.988791",
+    "source": "perplexity_research"
+  },
+  "Jesse Welles & joan baez": {
+    "mentors": [],
+    "collaborators": [
+      "Joan Baez",
+      "John Fogerty"
+    ],
+    "influenced": [],
+    "updated": "2026-01-17T02:06:30.337757",
+    "source": "perplexity_research"
+  },
+  "tarbox ramblers": {
+    "mentors": [
+      "Dock Boggs",
+      "John Lee Hooker",
+      "Carter Family"
+    ],
+    "collaborators": [
+      "Michael Tarbox",
+      "Daniel Kellar",
+      "Jim Dickinson"
+    ],
+    "influenced": [],
+    "updated": "2026-01-17T02:06:47.490543",
+    "source": "perplexity_research"
   }
 }
